@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>品牌床垫 - 进销存管理系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f0e8;--card:#ffffff;--sidebar:#5c4a32;--accent:#8b6914;--accent-l:#a67c00;--accent-g:rgba(139,105,20,.12);--green:#1a8a4a;--green-g:rgba(26,138,74,.12);--red:#c0392b;--red-g:rgba(192,57,43,.1);--orange:#d4870e;--orange-g:rgba(212,135,14,.12);--purple:#7b5ea7;--text:#3d3425;--dim:#6b5d4f;--muted:#8a7d6f;--border:rgba(92,74,50,.15);--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow:hidden}
+.sidebar{width:220px;background:var(--sidebar);border-right:1px solid rgba(92,74,50,.2);display:flex;flex-direction:column;height:100vh;position:fixed;left:0;top:0;z-index:100}
+.sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-brand h1{font-size:18px;font-weight:700;color:#f5d77e;letter-spacing:1px}
+.sidebar-brand p{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;letter-spacing:2px}
+.sidebar-nav{flex:1;padding:12px 8px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.6);font-size:13.5px;transition:all .2s;margin-bottom:2px}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#f5f0e8}
+.nav-item.active{background:rgba(255,255,255,.15);color:#f5d77e;font-weight:500}
+.nav-item svg{width:18px;height:18px;flex-shrink:0}
+.nav-section{font-size:10px;color:rgba(255,255,255,.35);padding:16px 14px 6px;text-transform:uppercase;letter-spacing:2px;font-weight:600}
+.sidebar-footer{padding:16px 14px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:rgba(255,255,255,.4)}
+.main{margin-left:220px;flex:1;height:100vh;overflow-y:auto;overflow-x:hidden}
+.page{display:none;padding:28px 32px 40px;animation:fadeIn .3s}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:22px;font-weight:700;color:#3d3425;display:flex;align-items:center;gap:10px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:all .3s;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.stat-card.blue::after{background:var(--accent)}.stat-card.green::after{background:var(--green)}.stat-card.orange::after{background:var(--orange)}.stat-card.red::after{background:var(--red)}.stat-card.purple::after{background:var(--purple)}
+.stat-card:hover{transform:translateY(-2px);border-color:rgba(92,74,50,.2)}
+.stat-label{font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500}
+.stat-value{font-size:28px;font-weight:700;color:#3d3425}
+.stat-value.green{color:var(--green)}.stat-value.red{color:var(--red)}.stat-value.blue{color:var(--accent-l)}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.chart-title{font-size:14px;font-weight:600;color:#3d3425;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.chart-title::before{content:'';width:3px;height:16px;background:var(--accent);border-radius:2px}
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{width:60px;font-size:12px;color:var(--dim);text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:26px;background:rgba(92,74,50,.08);border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;font-weight:600;color:#fff;transition:width 1s ease;min-width:30px}
+.bar-fill.c1{background:linear-gradient(90deg,#8b6914,#b8941f)}.bar-fill.c2{background:linear-gradient(90deg,#0f6d3a,#1a8a4a)}.bar-fill.c3{background:linear-gradient(90deg,#b3700a,#d4870e)}.bar-fill.c4{background:linear-gradient(90deg,#5b3e8a,#7b5ea7)}.bar-fill.c5{background:linear-gradient(90deg,#8b2252,#c0437a)}.bar-fill.c6{background:linear-gradient(90deg,#8b4513,#b8621a)}
+.line-chart-container{height:200px;position:relative}
+.line-chart-svg{width:100%;height:100%}
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.table-header{padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.table-header h3{font-size:14px;font-weight:600;color:#3d3425}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;font-size:11px;font-weight:600;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);background:rgba(92,74,50,.06);white-space:nowrap}
+tbody td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr:hover{background:rgba(139,105,20,.04)}
+.badge{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:500;display:inline-block}
+.badge-green{background:var(--green-g);color:var(--green)}.badge-red{background:var(--red-g);color:var(--red)}.badge-orange{background:var(--orange-g);color:var(--orange)}.badge-blue{background:var(--accent-g);color:var(--accent-l)}.badge-purple{background:rgba(139,92,246,.15);color:var(--purple)}
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{display:flex;flex-direction:column;gap:6px}.form-group.full{grid-column:1/-1}
+.form-label{font-size:12px;color:var(--dim);font-weight:500}
+.form-input,.form-select{background:#faf8f4;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;font-family:inherit;transition:border-color .2s;outline:none;width:100%}
+.form-input:focus,.form-select:focus{border-color:var(--accent)}
+.form-select option{background:#fff}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#7a5c10;transform:translateY(-1px)}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#059669}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--dim)}.btn-outline:hover{border-color:var(--dim);color:var(--text)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-group{display:flex;gap:8px;margin-top:20px}
+.account-options{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.account-option{padding:8px 16px;border-radius:8px;border:1px solid var(--border);cursor:pointer;font-size:12px;color:var(--dim);transition:all .2s;background:rgba(92,74,50,.04)}
+.account-option:hover{border-color:var(--accent);color:var(--accent-l)}
+.account-option.selected{background:var(--accent-g);border-color:var(--accent);color:var(--accent-l);font-weight:500}
+.flow-table-wrap{overflow-x:auto;max-height:calc(100vh - 300px);overflow-y:auto}
+.flow-table-wrap table{min-width:1800px}
+.flow-table-wrap thead{position:sticky;top:0;z-index:10}
+.inventory-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.inv-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px;transition:all .3s}
+.inv-card:hover{border-color:rgba(92,74,50,.2);transform:translateY(-2px)}
+.inv-brand{font-size:14px;font-weight:600;color:#3d3425}.inv-model{font-size:12px;color:var(--dim);margin-top:2px}
+.inv-details{display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.inv-detail-item{text-align:center}.inv-detail-label{font-size:10px;color:var(--muted)}.inv-detail-value{font-size:16px;font-weight:700;margin-top:2px}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(92,74,50,.2);border-radius:3px}
+.action-btn{padding:4px 8px;border-radius:4px;border:none;cursor:pointer;font-size:11px;color:var(--dim);background:rgba(92,74,50,.08);transition:all .2s;margin-right:4px}
+.action-btn:hover{background:rgba(92,74,50,.15);color:#3d3425}.action-btn.delete:hover{color:var(--red)}
+.profit-pos{color:var(--green)}.profit-neg{color:var(--red)}
+.header-actions{display:flex;gap:8px}
+.search-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}.search-input{flex:1;max-width:320px}
+.month-filter{display:flex;gap:8px;align-items:center;margin-bottom:16px}
+.donut-container{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:6px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+@media(max-width:1200px){.stats-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}}
+@media(max-width:768px){
+.sidebar{display:none}
+.main{margin-left:0;padding-bottom:100px}
+.page{padding:16px 14px 30px}
+.page-header{flex-direction:column;align-items:flex-start;gap:10px}
+.page-title{font-size:18px}
+.stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+.stat-card{padding:14px}
+.stat-value{font-size:20px}
+.stat-label{font-size:11px}
+.stat-sub{font-size:10px}
+.charts-grid{grid-template-columns:1fr;gap:12px}
+.form-grid{grid-template-columns:1fr}
+.form-card{padding:16px}
+.btn-group{flex-direction:row;flex-wrap:wrap}
+.btn{padding:10px 16px;flex:1;justify-content:center}
+.header-actions{width:100%;justify-content:flex-end}
+.search-bar{flex-direction:column}.search-input{max-width:100%}
+.search-bar .form-select{width:100%!important}
+.flow-table-wrap{max-height:60vh}
+.flow-table-wrap table{min-width:900px}
+.table-header{padding:12px 14px}
+.table-header h3{font-size:13px}
+thead th{padding:8px 10px;font-size:10px}
+tbody td{padding:8px 10px;font-size:12px}
+.month-filter{flex-wrap:wrap}
+.bar-label{width:60px;font-size:11px}
+.bar-fill{font-size:10px}
+.donut-container{flex-direction:column;align-items:flex-start}
+.chart-card{padding:14px}
+.account-options{gap:6px}
+.account-option{padding:6px 12px;font-size:11px}
+.inventory-grid{grid-template-columns:1fr}
+.bottom-nav{display:flex}
+}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sidebar);z-index:200;padding:10px 0 calc(env(safe-area-inset-bottom,0px) + 16px);border-top:1px solid rgba(255,255,255,.1);justify-content:space-around;align-items:center;box-shadow:0 -4px 20px rgba(0,0,0,.15)}
+.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;cursor:pointer;color:rgba(255,255,255,.5);transition:all .2s;border-radius:8px;-webkit-tap-highlight-color:transparent;user-select:none}
+.bottom-nav-item.active{color:#f5d77e}
+.bottom-nav-item svg{width:20px;height:20px}
+.bottom-nav-item span{font-size:9px;font-weight:500}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+<div class="sidebar-brand"><h1>品牌床垫</h1><p>MATTRESS PRO</p></div>
+<nav class="sidebar-nav">
+<div class="nav-section">概览</div>
+<div class="nav-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>数据看板</div>
+<div class="nav-section">业务操作</div>
+<div class="nav-item" data-page="purchase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>进货登记</div>
+<div class="nav-item" data-page="sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>销售登记</div>
+<div class="nav-section">数据管理</div>
+<div class="nav-item" data-page="inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>库存管理</div>
+<div class="nav-item" data-page="flow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>总流水</div>
+<div class="nav-item" data-page="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>流水明细</div>
+</nav>
+<div class="sidebar-footer">v2.0 · 水流专用</div>
+</aside>
+<main class="main">
+<!-- 数据看板 -->
+<div class="page active" id="page-dashboard">
+<div class="page-header"><div class="page-title"><span>📊</span> 数据看板</div>
+<div class="header-actions"><button class="btn btn-outline btn-sm" onclick="exportAll()">📤 导出数据</button><button class="btn btn-primary btn-sm" onclick="document.getElementById('importFile').click()">📥 导入数据</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)"></div></div>
+<div class="stats-grid" id="dashStats"></div>
+<div class="charts-grid">
+<div class="chart-card"><div class="chart-title">品牌库存分布</div><div id="brandChart" class="bar-chart"></div></div>
+<div class="chart-card"><div class="chart-title">近7天销售趋势</div><div class="line-chart-container"><svg id="trendSvg" class="line-chart-svg" viewBox="0 0 500 200"></svg></div></div>
+<div class="chart-card"><div class="chart-title">渠道销售占比</div><div class="donut-container"><svg id="donutSvg" width="160" height="160" viewBox="0 0 160 160"></svg><div id="donutLeg" class="donut-legend"></div></div></div>
+<div class="chart-card"><div class="chart-title">闲鱼账号业绩对比</div><div id="acctChart" class="bar-chart"></div></div>
+</div>
+<div class="table-card"><div class="table-header"><h3>⚠️ 库存预警（≤2张）</h3></div>
+<table><thead><tr><th>品牌</th><th>型号</th><th>尺寸</th><th>剩余</th><th>状态</th></tr></thead><tbody id="alertTb"></tbody></table></div>
+</div>
+<!-- 进货登记 -->
+<div class="page" id="page-purchase">
+<div class="page-header"><div class="page-title"><span>➕</span> 进货登记</div></div>
+<div class="form-card"><div class="form-grid">
+<div class="form-group"><label class="form-label">品牌</label><select class="form-select" id="p-brand"><option value="">选择品牌</option><option>舒达(Serta)</option><option>丝涟(Sealy)</option><option>金可儿(King Koil)</option><option>慕思(DeRUCCI)</option><option>乐德飞翼(Lattoflex)</option><option>席梦思(Simmons)</option><option>朗乐福</option><option>其它</option></select></div>
+<div class="form-group"><label class="form-label">型号</label><input class="form-input" id="p-model" placeholder="输入型号"></div>
+<div class="form-group"><label class="form-label">规格</label><select class="form-select" id="p-size"><option value="">选择尺寸</option><option>120×200</option><option>150×200</option><option>180×200</option><option>200×200</option><option>200×220</option><option>其它定制尺寸</option></select></div>
+<div class="form-group"><label class="form-label">数量</label><input class="form-input" id="p-qty" type="number" min="1" value="1"></div>
+<div class="form-group"><label class="form-label">进货价（元/张）</label><input class="form-input" id="p-cost" type="number" placeholder="0"></div>
+<div class="form-group"><label class="form-label">日期</label><input class="form-input" id="p-date" type="date"></div>
+<div class="form-group"><label class="form-label">供应商/货物来源</label><input class="form-input" id="p-supplier" placeholder="如：舒达专卖店"></div>
+<div class="form-group"><label class="form-label">性质</label><select class="form-select" id="p-nature"><option>全新</option><option>样品</option></select></div>
+<div class="form-group full"><label class="form-label">备注</label><input class="form-input" id="p-note" placeholder="选填"></div>
+</div><div class="btn-group"><button class="btn btn-primary" onclick="addP()">✅ 确认进货</button><button class="btn btn-outline" onclick="clr('p')">🔄 重置</button></div></div>
+<div style="margin-top:24px"><div class="table-card"><div class="table-header"><h3>最近进货记录</h3></div><div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>品牌</th><th>型号</th><th>规格</th><th>数量</th><th>进价</th><th>性质</th><th>来源</th><th>操作</th></tr></thead><tbody id="pTb"></tbody></table></div></div></div>
+</div>
+<!-- 销售登记 -->
+<div class="page" id="page-sales">
+<div class="page-header"><div class="page-title"><span>📈</span> 销售登记</div></div>
+<div class="form-card"><div class="form-grid">
+<div class="form-group"><label class="form-label">品牌</label><select class="form-select" id="s-brand"><option value="">选择品牌</option><option>舒达(Serta)</option><option>丝涟(Sealy)</option><option>金可儿(King Koil)</option><option>慕思(DeRUCCI)</option><option>乐德飞翼(Lattoflex)</option><option>席梦思(Simmons)</option><option>朗乐福</option><option>其它</option></select></div>
+<div class="form-group"><label class="form-label">型号</label><input class="form-input" id="s-model" placeholder="输入型号"></div>
+<div class="form-group"><label class="form-label">规格</label><select class="form-select" id="s-size"><option value="">选择尺寸</option><option>120×200</option><option>150×200</option><option>180×200</option><option>200×200</option><option>200×220</option><option>其它定制尺寸</option></select></div>
+<div class="form-group"><label class="form-label">数量</label><input class="form-input" id="s-qty" type="number" min="1" value="1"></div>
+<div class="form-group"><label class="form-label">销售价（元）</label><input class="form-input" id="s-price" type="number" placeholder="0" oninput="calcPlatform()"></div>
+<div class="form-group"><label class="form-label">进货价（元）</label><input class="form-input" id="s-cost" type="number" placeholder="0"></div>
+<div class="form-group"><label class="form-label">进货物流费（元）</label><input class="form-input" id="s-logistics-in" type="number" value="0"></div>
+<div class="form-group"><label class="form-label">发货物流费（元）</label><input class="form-input" id="s-logistics-out" type="number" value="0"></div>
+<div class="form-group"><label class="form-label">包装费（元）</label><input class="form-input" id="s-packing" type="number" value="50"></div>
+<div class="form-group"><label class="form-label">好评费（元）</label><input class="form-input" id="s-review" type="number" value="0"></div>
+<div class="form-group"><label class="form-label">平台费（销售价×1.5%）</label><input class="form-input" id="s-platform" type="number" value="0" readonly style="background:rgba(92,74,50,.06);color:var(--accent)"></div>
+<div class="form-group"><label class="form-label">日期</label><input class="form-input" id="s-date" type="date"></div>
+<div class="form-group"><label class="form-label">客户来源/渠道</label><select class="form-select" id="s-channel" onchange="togAcct()"><option value="">选择渠道</option><option>闲鱼</option><option>微信</option><option>线下</option><option>抖音</option><option>其他</option></select></div>
+<div class="form-group full" id="acctGrp" style="display:none"><label class="form-label">闲鱼账号 <span style="color:var(--red)">*</span></label><div class="account-options"><div class="account-option" onclick="pickAcct(this,'品牌床垫终极折扣')">🏪 品牌床垫终极折扣</div><div class="account-option" onclick="pickAcct(this,'大牌床垫')">🛏️ 大牌床垫</div><div class="account-option" onclick="pickAcct(this,'品牌家居')">🏠 品牌家居</div></div><input type="hidden" id="s-account" value=""></div>
+<div class="form-group"><label class="form-label">性质</label><select class="form-select" id="s-nature"><option>全新</option><option>样品</option></select></div>
+<div class="form-group"><label class="form-label">货物来源</label><input class="form-input" id="s-source" placeholder="如：舒达专卖店"></div>
+<div class="form-group"><label class="form-label">客户城市</label><input class="form-input" id="s-city" placeholder="如：上海"></div>
+<div class="form-group"><label class="form-label">客户信息</label><input class="form-input" id="s-custinfo" placeholder="姓名/电话/地址等"></div>
+<div class="form-group full"><label class="form-label">备注</label><input class="form-input" id="s-note" placeholder="如：好评送乳胶枕"></div>
+</div><div class="btn-group"><button class="btn btn-success" onclick="addS()">💰 确认销售</button><button class="btn btn-outline" onclick="clr('s')">🔄 重置</button></div></div>
+<div style="margin-top:24px"><div class="table-card"><div class="table-header"><h3>最近销售记录</h3></div><div style="overflow-x:auto"><table><thead><tr><th>日期</th><th>品牌</th><th>型号</th><th>规格</th><th>售价</th><th>成本</th><th>利润</th><th>毛利率</th><th>渠道</th><th>账号</th><th>城市</th><th>操作</th></tr></thead><tbody id="sTb"></tbody></table></div></div></div>
+</div>
+<!-- 库存管理 -->
+<div class="page" id="page-inventory">
+<div class="page-header"><div class="page-title"><span>📦</span> 库存管理</div></div>
+<div class="search-bar"><input class="form-input search-input" id="invQ" placeholder="搜索品牌或型号..." oninput="rInv()"></div>
+<div class="inventory-grid" id="invGrid"></div>
+</div>
+<!-- 总流水 -->
+<div class="page" id="page-flow">
+<div class="page-header"><div class="page-title"><span>📋</span> 总流水</div><div class="header-actions"><button class="btn btn-outline btn-sm" onclick="exportCSV()">📤 导出CSV</button></div></div>
+<div class="month-filter"><label class="form-label" style="margin-bottom:0">月份：</label><select class="form-select" id="flowMon" onchange="rFlow()" style="width:160px"><option value="all">全部</option></select></div>
+<div class="stats-grid" id="flowStats"></div>
+<div class="table-card"><div class="flow-table-wrap"><table><thead><tr><th>序号</th><th>日期</th><th>品牌</th><th>型号</th><th>规格</th><th>销售价</th><th>进货价</th><th>进货物流</th><th>发货物流</th><th>包装费</th><th>好评费</th><th>平台费</th><th>单笔利润</th><th>毛利率</th><th>性质</th><th>货物来源</th><th>客户来源</th><th>账号</th><th>客户城市</th><th>客户信息</th><th>备注</th></tr></thead><tbody id="flowTb"></tbody></table></div></div>
+</div>
+<!-- 流水明细 -->
+<div class="page" id="page-detail">
+<div class="page-header"><div class="page-title"><span>🔍</span> 流水明细</div></div>
+<div class="search-bar"><input class="form-input search-input" id="dtQ" placeholder="搜索品牌、型号、客户..." oninput="rDt()"><select class="form-select" id="dtBrand" onchange="rDt()" style="width:160px"><option value="all">全部品牌</option></select><select class="form-select" id="dtCh" onchange="rDt()" style="width:140px"><option value="all">全部渠道</option><option>闲鱼</option><option>微信</option><option>线下</option></select></div>
+<div class="table-card"><div class="flow-table-wrap"><table><thead><tr><th>日期</th><th>品牌</th><th>型号</th><th>规格</th><th>售价</th><th>进价</th><th>总费用</th><th>利润</th><th>毛利率</th><th>进销毛利率</th><th>性质</th><th>渠道</th><th>账号</th><th>城市</th><th>客户信息</th><th>备注</th></tr></thead><tbody id="dtTb"></tbody></table></div></div>
+</div>
+</main>
+<nav class="bottom-nav">
+<div class="bottom-nav-item active" data-page="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>看板</span></div>
+<div class="bottom-nav-item" data-page="purchase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>进货</span></div>
+<div class="bottom-nav-item" data-page="sales"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span>销售</span></div>
+<div class="bottom-nav-item" data-page="inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span>库存</span></div>
+<div class="bottom-nav-item" data-page="flow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>流水</span></div>
+<div class="bottom-nav-item" data-page="detail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>明细</span></div>
+</nav>
+<script>
+const SK='mattress_pro_v2';let D={purchases:[],sales:[],nextId:1};
+function load(){const s=localStorage.getItem(SK);if(s)try{D=JSON.parse(s)}catch(e){}const t=new Date().toISOString().split('T')[0];document.getElementById('p-date').value=t;document.getElementById('s-date').value=t}
+function save(){localStorage.setItem(SK,JSON.stringify(D))}
+const $=id=>document.getElementById(id);
+function switchPage(page){
+document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.bottom-nav-item').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.querySelectorAll(`.nav-item[data-page="${page}"]`).forEach(x=>x.classList.add('active'));
+document.querySelectorAll(`.bottom-nav-item[data-page="${page}"]`).forEach(x=>x.classList.add('active'));
+$('page-'+page).classList.add('active');
+rf(page);
+}
+document.querySelectorAll('.nav-item').forEach(n=>{n.addEventListener('click',()=>switchPage(n.dataset.page))});
+document.querySelectorAll('.bottom-nav-item').forEach(n=>{n.addEventListener('click',()=>switchPage(n.dataset.page))});
+function rf(p){if(p==='dashboard')rDash();else if(p==='purchase')rP();else if(p==='sales')rS();else if(p==='inventory')rInv();else if(p==='flow'){popMon();rFlow()}else if(p==='detail')rDtPage()}
+
+function addP(){const b=$('p-brand').value,m=$('p-model').value,sz=$('p-size').value,q=parseInt($('p-qty').value)||0,c=parseFloat($('p-cost').value)||0,dt=$('p-date').value,sp=$('p-supplier').value,nt=$('p-nature').value,no=$('p-note').value;if(!b||!m||!sz||q<=0||c<=0){alert('请填写完整进货信息');return}D.purchases.push({id:D.nextId++,brand:b,model:m,size:sz,qty:q,cost:c,date:dt,supplier:sp,nature:nt,note:no});save();clr('p');rP();alert('✅ 进货登记成功！')}
+function delP(id){if(!confirm('确定删除？'))return;D.purchases=D.purchases.filter(p=>p.id!==id);save();rP()}
+function rP(){$('pTb').innerHTML=[...D.purchases].reverse().slice(0,50).map(p=>`<tr><td>${p.date||'-'}</td><td>${p.brand}</td><td>${p.model}</td><td>${p.size}</td><td>${p.qty}</td><td>¥${p.cost.toLocaleString()}</td><td><span class="badge ${p.nature==='样品'?'badge-orange':'badge-blue'}">${p.nature||'全新'}</span></td><td>${p.supplier||'-'}</td><td><button class="action-btn delete" onclick="delP(${p.id})">删除</button></td></tr>`).join('')}
+
+function togAcct(){const ch=$('s-channel').value;$('acctGrp').style.display=ch==='闲鱼'?'flex':'none';if(ch!=='闲鱼'){$('s-account').value='';document.querySelectorAll('.account-option').forEach(o=>o.classList.remove('selected'))}}
+function pickAcct(el,nm){document.querySelectorAll('.account-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');$('s-account').value=nm}
+
+function calcPlatform(){const pr=parseFloat($('s-price').value)||0;$('s-platform').value=(pr*0.015).toFixed(2)}
+
+function addS(){const b=$('s-brand').value,m=$('s-model').value,sz=$('s-size').value,q=parseInt($('s-qty').value)||0,pr=parseFloat($('s-price').value)||0,co=parseFloat($('s-cost').value)||0,lgIn=parseFloat($('s-logistics-in').value)||0,lgOut=parseFloat($('s-logistics-out').value)||0,pk=parseFloat($('s-packing').value)||0,rv=parseFloat($('s-review').value)||0,pf=parseFloat($('s-platform').value)||0,dt=$('s-date').value,ch=$('s-channel').value,ac=$('s-account').value,nt=$('s-nature').value,sr=$('s-source').value,ci=$('s-city').value,cinfo=$('s-custinfo').value,no=$('s-note').value;
+if(!b||!m||!sz||q<=0||pr<=0){alert('请填写完整销售信息');return}if(ch==='闲鱼'&&!ac){alert('请选择闲鱼账号');return}
+const lg=lgIn+lgOut;const profit=pr-co-lg-pk-rv-pf,margin=pr>0?profit/pr:0,tm=pr>0?(pr-co)/pr:0;
+D.sales.push({id:D.nextId++,brand:b,model:m,size:sz,qty:q,price:pr,cost:co,logisticsIn:lgIn,logisticsOut:lgOut,logistics:lg,packing:pk,review:rv,platform:pf,profit,margin,tradMargin:tm,date:dt,channel:ch,account:ac,nature:nt,source:sr,city:ci,custinfo:cinfo,note:no});save();clr('s');rS();alert('💰 销售登记成功！')}
+function delS(id){if(!confirm('确定删除？'))return;D.sales=D.sales.filter(s=>s.id!==id);save();rS()}
+function rS(){$('sTb').innerHTML=[...D.sales].reverse().slice(0,50).map(s=>{const pc=s.profit>=0?'profit-pos':'profit-neg';return`<tr><td>${s.date||'-'}</td><td>${s.brand}</td><td>${s.model}</td><td>${s.size}</td><td>¥${s.price.toLocaleString()}</td><td>¥${s.cost.toLocaleString()}</td><td class="${pc}">¥${s.profit.toFixed(0)}</td><td>${(s.margin*100).toFixed(1)}%</td><td><span class="badge badge-green">${s.channel||'-'}</span></td><td>${s.account?`<span class="badge badge-purple">${s.account}</span>`:'-'}</td><td>${s.city||'-'}</td><td><button class="action-btn delete" onclick="delS(${s.id})">删除</button></td></tr>`}).join('')}
+
+function clr(x){if(x==='p'){['p-brand','p-size','p-nature'].forEach(id=>{$(id).selectedIndex=0});['p-model','p-note','p-supplier'].forEach(id=>{$(id).value=''});$('p-qty').value=1;$('p-cost').value=''}else{['s-brand','s-size','s-channel','s-nature'].forEach(id=>{$(id).selectedIndex=0});['s-model','s-city','s-custinfo','s-note','s-source'].forEach(id=>{$(id).value=''});$('s-qty').value=1;['s-price','s-cost'].forEach(id=>{$(id).value=''});$('s-logistics-in').value=0;$('s-logistics-out').value=0;$('s-packing').value=50;$('s-review').value=0;$('s-platform').value=0;$('s-account').value='';document.querySelectorAll('.account-option').forEach(o=>o.classList.remove('selected'));$('acctGrp').style.display='none'}}
+
+function cInv(){const inv={};D.purchases.forEach(p=>{const k=`${p.brand}||${p.model}||${p.size}`;if(!inv[k])inv[k]={stock:0,tc:0};inv[k].stock+=p.qty;inv[k].tc+=p.cost*p.qty});D.sales.forEach(s=>{const k=`${s.brand}||${s.model}||${s.size}`;if(inv[k])inv[k].stock-=s.qty});Object.entries(inv).forEach(([k,v])=>{const tq=D.purchases.filter(p=>`${p.brand}||${p.model}||${p.size}`===k).reduce((a,p)=>a+p.qty,0);v.avg=tq>0?v.tc/tq:0});return inv}
+
+function rInv(){const inv=cInv();const q=($('invQ')?.value||'').toLowerCase();$('invGrid').innerHTML=Object.entries(inv).filter(([k,v])=>v.stock>0&&k.toLowerCase().includes(q)).sort((a,b)=>b[1].stock-a[1].stock).map(([k,v])=>{const[br,mo,sz]=k.split('||');const sc=v.stock<=2?'var(--red)':v.stock<=5?'var(--orange)':'var(--green)';return`<div class="inv-card"><div class="inv-brand">${br}</div><div class="inv-model">${mo} · ${sz}</div><div class="inv-details"><div class="inv-detail-item"><div class="inv-detail-label">库存</div><div class="inv-detail-value" style="color:${sc}">${v.stock}</div></div><div class="inv-detail-item"><div class="inv-detail-label">均价</div><div class="inv-detail-value" style="color:var(--accent-l)">¥${v.avg.toFixed(0)}</div></div><div class="inv-detail-item"><div class="inv-detail-label">库存成本</div><div class="inv-detail-value">¥${(v.stock*v.avg).toFixed(0)}</div></div></div></div>`}).join('')||'<div style="color:var(--muted);text-align:center;padding:40px;grid-column:1/-1">暂无库存数据</div>'}
+
+function rDash(){const inv=cInv();const ts=Object.values(inv).reduce((s,v)=>s+Math.max(v.stock,0),0);const tsc=Object.values(inv).reduce((s,v)=>s+Math.max(v.stock,0)*v.avg,0);const now=new Date(),ms=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;const mS=D.sales.filter(s=>s.date&&s.date.startsWith(ms));const mR=mS.reduce((s,r)=>s+r.price*r.qty,0),mP=mS.reduce((s,r)=>s+r.profit,0),mC=mS.reduce((s,r)=>s+r.qty,0);const tR=D.sales.reduce((s,r)=>s+r.price*r.qty,0),tP=D.sales.reduce((s,r)=>s+r.profit,0);
+$('dashStats').innerHTML=`<div class="stat-card blue"><div class="stat-label">当前库存总量</div><div class="stat-value">${ts} <span style="font-size:14px;color:var(--muted)">张</span></div></div><div class="stat-card orange"><div class="stat-label">库存总成本</div><div class="stat-value">¥${tsc.toLocaleString(undefined,{maximumFractionDigits:0})}</div></div><div class="stat-card green"><div class="stat-label">本月销售额</div><div class="stat-value">¥${mR.toLocaleString()}</div><div class="stat-sub">${mC}张已售</div></div><div class="stat-card ${mP>=0?'green':'red'}"><div class="stat-label">本月利润</div><div class="stat-value ${mP>=0?'green':'red'}">¥${mP.toLocaleString(undefined,{maximumFractionDigits:0})}</div></div><div class="stat-card purple"><div class="stat-label">累计销售额</div><div class="stat-value blue">¥${tR.toLocaleString()}</div></div><div class="stat-card green"><div class="stat-label">累计利润</div><div class="stat-value green">¥${tP.toLocaleString(undefined,{maximumFractionDigits:0})}</div></div><div class="stat-card blue"><div class="stat-label">总交易笔数</div><div class="stat-value">${D.sales.length}</div></div><div class="stat-card orange"><div class="stat-label">平均单笔利润</div><div class="stat-value">¥${D.sales.length>0?(tP/D.sales.length).toFixed(0):'0'}</div></div>`;
+const bs={};Object.entries(inv).forEach(([k,v])=>{if(v.stock<=0)return;const b=k.split('||')[0].replace(/\(.*\)/,'');bs[b]=(bs[b]||0)+v.stock});const sb=Object.entries(bs).sort((a,b)=>b[1]-a[1]);const mx=Math.max(...sb.map(([,v])=>v),1);const cc=['c1','c2','c3','c4','c5','c6'];
+$('brandChart').innerHTML=sb.map(([b,v],i)=>`<div class="bar-row"><div class="bar-label">${b}</div><div class="bar-track"><div class="bar-fill ${cc[i%6]}" style="width:${v/mx*100}%">${v}</div></div></div>`).join('')||'<div style="color:var(--muted);padding:20px;text-align:center">暂无数据</div>';
+rTrend();rDonut();rAcct();
+const alerts=Object.entries(inv).filter(([,v])=>v.stock>0&&v.stock<=2);$('alertTb').innerHTML=alerts.map(([k,v])=>{const[br,mo,sz]=k.split('||');return`<tr><td>${br}</td><td>${mo}</td><td>${sz}</td><td>${v.stock}张</td><td><span class="badge badge-red">库存不足</span></td></tr>`}).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:20px">暂无库存预警 👍</td></tr>'}
+
+function rTrend(){const svg=$('trendSvg');const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split('T')[0])}const dt=days.map(d=>D.sales.filter(s=>s.date===d).reduce((sum,s)=>sum+s.price*s.qty,0));const max=Math.max(...dt,1000);const pL=50,pR=20,pT=25,pB=35,w=500-pL-pR,h=200-pT-pB;const pts=dt.map((v,i)=>({x:pL+(i/6)*w,y:pT+h-(v/max)*h,v}));let pathD='',areaD='';pts.forEach((p,i)=>{if(i===0){pathD+=`M${p.x},${p.y}`;areaD+=`M${p.x},${pT+h} L${p.x},${p.y}`}else{pathD+=` L${p.x},${p.y}`;areaD+=` L${p.x},${p.y}`}});areaD+=` L${pts[pts.length-1].x},${pT+h} Z`;const labels=days.map((d,i)=>`<text x="${pL+(i/6)*w}" y="${pT+h+20}" fill="#8a7d6f" font-size="11" text-anchor="middle">${d.slice(5)}</text>`).join('');const dots=pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="4" fill="#8b6914" stroke="#fff" stroke-width="2"/><text x="${p.x}" y="${p.y-10}" fill="#6b5d4f" font-size="10" text-anchor="middle">¥${p.v>1000?(p.v/1000).toFixed(1)+'k':p.v}</text>`).join('');svg.innerHTML=`<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8b6914" stop-opacity="0.3"/><stop offset="100%" stop-color="#8b6914" stop-opacity="0"/></linearGradient></defs><path d="${areaD}" fill="url(#ag)"/><path d="${pathD}" fill="none" stroke="#8b6914" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${labels}${dots}`}
+
+function rDonut(){const ch={};D.sales.forEach(s=>{const c=s.channel||'未知';ch[c]=(ch[c]||0)+s.qty});const total=Object.values(ch).reduce((a,b)=>a+b,0)||1;const entries=Object.entries(ch).sort((a,b)=>b[1]-a[1]);const dc=['#8b6914','#1a8a4a','#d4870e','#7b5ea7','#c0437a','#b8621a'];const svg=$('donutSvg');const cx=80,cy=80,r=60,inner=38;let sa=-Math.PI/2;let paths='';entries.forEach(([c,cnt],i)=>{const ang=(cnt/total)*Math.PI*2;const ea=sa+ang;const lg=ang>Math.PI?1:0;const x1=cx+r*Math.cos(sa),y1=cy+r*Math.sin(sa),x2=cx+r*Math.cos(ea),y2=cy+r*Math.sin(ea);const ix1=cx+inner*Math.cos(ea),iy1=cy+inner*Math.sin(ea),ix2=cx+inner*Math.cos(sa),iy2=cy+inner*Math.sin(sa);paths+=`<path d="M${x1},${y1} A${r},${r} 0 ${lg} 1 ${x2},${y2} L${ix1},${iy1} A${inner},${inner} 0 ${lg} 0 ${ix2},${iy2} Z" fill="${dc[i%6]}"/>`;sa=ea});paths+=`<text x="${cx}" y="${cy-4}" text-anchor="middle" fill="#3d3425" font-size="16" font-weight="700">${total}</text><text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#8a7d6f" font-size="10">总计</text>`;svg.innerHTML=paths;$('donutLeg').innerHTML=entries.map(([c,cnt],i)=>`<div class="legend-item"><div class="legend-dot" style="background:${dc[i%6]}"></div>${c} ${cnt}张 (${(cnt/total*100).toFixed(0)}%)</div>`).join('')}
+
+function rAcct(){const accs={};D.sales.filter(s=>s.channel==='闲鱼'&&s.account).forEach(s=>{if(!accs[s.account])accs[s.account]={count:0,revenue:0,profit:0};accs[s.account].count+=s.qty;accs[s.account].revenue+=s.price*s.qty;accs[s.account].profit+=s.profit});const entries=Object.entries(accs).sort((a,b)=>b[1].revenue-a[1].revenue);const maxR=Math.max(...entries.map(([,v])=>v.revenue),1);const cc=['c1','c3','c4'];$('acctChart').innerHTML=entries.length>0?entries.map(([n,v],i)=>`<div class="bar-row"><div class="bar-label" style="width:110px;font-size:11px">${n}</div><div class="bar-track"><div class="bar-fill ${cc[i%3]}" style="width:${v.revenue/maxR*100}%">¥${v.revenue.toLocaleString()} (${v.count}张)</div></div></div>`).join(''):'<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">暂无闲鱼账号数据</div>'}
+
+function popMon(){const months=new Set();D.sales.forEach(s=>{if(s.date)months.add(s.date.slice(0,7))});const sel=$('flowMon');const cur=sel.value;sel.innerHTML='<option value="all">全部</option>';[...months].sort().reverse().forEach(m=>{sel.innerHTML+=`<option value="${m}" ${m===cur?'selected':''}>${m}</option>`})}
+function rFlow(){const mon=$('flowMon').value;let sales=[...D.sales];if(mon!=='all')sales=sales.filter(s=>s.date&&s.date.startsWith(mon));sales.sort((a,b)=>(a.date||'').localeCompare(b.date||''));const tR=sales.reduce((s,r)=>s+r.price*r.qty,0),tC=sales.reduce((s,r)=>s+r.cost*r.qty,0),tP=sales.reduce((s,r)=>s+r.profit,0),tN=sales.reduce((s,r)=>s+r.qty,0),am=tR>0?tP/tR*100:0;
+$('flowStats').innerHTML=`<div class="stat-card blue"><div class="stat-label">总销售额</div><div class="stat-value blue">¥${tR.toLocaleString()}</div><div class="stat-sub">${tN}笔交易</div></div><div class="stat-card orange"><div class="stat-label">总进货成本</div><div class="stat-value">¥${tC.toLocaleString()}</div></div><div class="stat-card green"><div class="stat-label">总利润</div><div class="stat-value green">¥${tP.toFixed(0)}</div></div><div class="stat-card ${am>=0?'green':'red'}"><div class="stat-label">平均毛利率</div><div class="stat-value">${am.toFixed(1)}%</div></div>`;
+$('flowTb').innerHTML=sales.map((s,i)=>{const pc=s.profit>=0?'profit-pos':'profit-neg';return`<tr><td>${i+1}</td><td>${s.date||'-'}</td><td>${s.brand}</td><td>${s.model}</td><td>${s.size}</td><td>¥${s.price.toLocaleString()}</td><td>¥${s.cost.toLocaleString()}</td><td>¥${s.logisticsIn||0}</td><td>¥${s.logisticsOut||0}</td><td>¥${s.packing||0}</td><td>¥${s.review||0}</td><td>¥${(s.platform||0).toFixed(0)}</td><td class="${pc}">¥${s.profit.toFixed(0)}</td><td>${(s.margin*100).toFixed(1)}%</td><td><span class="badge ${s.nature==='样品'?'badge-orange':'badge-blue'}">${s.nature||'-'}</span></td><td>${s.source||'-'}</td><td>${s.channel||'-'}</td><td>${s.account?`<span class="badge badge-purple">${s.account}</span>`:'-'}</td><td>${s.city||'-'}</td><td>${s.custinfo||'-'}</td><td>${s.note||'-'}</td></tr>`}).join('')||'<tr><td colspan="21" style="text-align:center;color:var(--muted);padding:30px">暂无流水数据</td></tr>'}
+
+function rDtPage(){const brands=new Set();D.sales.forEach(s=>brands.add(s.brand));const bf=$('dtBrand');const cur=bf.value;bf.innerHTML='<option value="all">全部品牌</option>';[...brands].sort().forEach(b=>{bf.innerHTML+=`<option ${b===cur?'selected':''}>${b}</option>`});rDt()}
+function rDt(){const q=($('dtQ')?.value||'').toLowerCase();const bf=$('dtBrand').value;const cf=$('dtCh').value;let sales=[...D.sales].reverse();if(bf!=='all')sales=sales.filter(s=>s.brand===bf);if(cf!=='all')sales=sales.filter(s=>s.channel===cf);if(q)sales=sales.filter(s=>(s.brand+s.model+(s.city||'')+(s.custinfo||'')+s.note).toLowerCase().includes(q));
+$('dtTb').innerHTML=sales.map(s=>{const fee=(s.logistics||0)+(s.packing||0)+(s.review||0)+(s.platform||0);const pc=s.profit>=0?'profit-pos':'profit-neg';const tm=s.price>0?((s.price-s.cost)/s.price*100).toFixed(1)+'%':'-';return`<tr><td>${s.date||'-'}</td><td>${s.brand}</td><td>${s.model}</td><td>${s.size}</td><td>¥${s.price.toLocaleString()}</td><td>¥${s.cost.toLocaleString()}</td><td>¥${fee}</td><td class="${pc}">¥${s.profit.toFixed(0)}</td><td>${(s.margin*100).toFixed(1)}%</td><td>${tm}</td><td><span class="badge ${s.nature==='样品'?'badge-orange':'badge-blue'}">${s.nature||'-'}</span></td><td>${s.channel||'-'}</td><td>${s.account?`<span class="badge badge-purple">${s.account}</span>`:'-'}</td><td>${s.city||'-'}</td><td>${s.custinfo||'-'}</td><td>${s.note||'-'}</td></tr>`}).join('')||'<tr><td colspan="16" style="text-align:center;color:var(--muted);padding:30px">暂无数据</td></tr>'}
+
+function exportAll(){const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`品牌床垫_${new Date().toISOString().split('T')[0]}.json`;a.click()}
+function importData(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const imp=JSON.parse(e.target.result);if(imp.purchases&&imp.sales){if(confirm(`确认导入？将合并 ${imp.purchases.length} 条进货 + ${imp.sales.length} 条销售记录`)){const maxId=Math.max(D.nextId,imp.nextId||0,...D.purchases.map(p=>p.id),...D.sales.map(s=>s.id),...imp.purchases.map(p=>p.id),...imp.sales.map(s=>s.id));D.purchases=[...D.purchases,...imp.purchases];D.sales=[...D.sales,...imp.sales];D.nextId=maxId+1;save();rDash();alert('✅ 导入成功！')}}else alert('文件格式不正确')}catch(err){alert('解析失败：'+err.message)}};reader.readAsText(file);event.target.value=''}
+function exportCSV(){const mon=$('flowMon').value;let sales=[...D.sales];if(mon!=='all')sales=sales.filter(s=>s.date&&s.date.startsWith(mon));const hd=['日期','品牌','型号','规格','销售价','进货价','进货物流费','发货物流费','包装费','好评费','平台费','单笔利润','毛利率','性质','货物来源','渠道','账号','客户城市','客户信息','备注'];const rows=sales.map(s=>[s.date,s.brand,s.model,s.size,s.price,s.cost,s.logisticsIn||0,s.logisticsOut||0,s.packing||0,s.review||0,(s.platform||0).toFixed(2),s.profit.toFixed(2),(s.margin*100).toFixed(1)+'%',s.nature||'',s.source||'',s.channel||'',s.account||'',s.city||'',s.custinfo||'',s.note||'']);const csv='\uFEFF'+[hd,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`品牌床垫流水_${mon==='all'?'全部':mon}.csv`;a.click()}
+
+load();rDash();
+</script>
+</body>
+</html>
