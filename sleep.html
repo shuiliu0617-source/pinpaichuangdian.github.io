@@ -1056,14 +1056,6 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
     padding-top: 60px !important;
   }
 }
-
-/* ═══ MOBILE FIX: kill blank top space ═══ */
-@media(max-width:768px) {
-  .screen { min-height:auto!important; justify-content:flex-start!important; align-items:stretch!important; padding-top:36px!important; padding-bottom:60px!important; }
-  #s0 { padding-top:56px!important; }
-  .app-shell, .main-content { min-height:auto!important; }
-}
-
 </style>
 </head>
 <body>
@@ -2115,7 +2107,6 @@ body{padding:24px;background:#f4ede0;font-family:'PingFang SC','Microsoft YaHei'
   #s0 { padding-top:56px!important; }
   .app-shell, .main-content { min-height:auto!important; }
 }
-
 </style>
 </head>
 <body>
@@ -2127,48 +2118,6 @@ body{padding:24px;background:#f4ede0;font-family:'PingFang SC','Microsoft YaHei'
     </div>
     <div class="result-report">${snap.reportHtml}</div>
   </div>
-
-<script>
-// Touch drag for mobile priority sorting
-(function(){
-  var di=null,sy=0;
-  document.addEventListener('touchstart',function(e){
-    var h=e.target.closest('.drag-handle'); if(!h)return;
-    var r=h.closest('.pri-row'); if(!r)return;
-    di=r; sy=e.touches[0].clientY;
-    r.style.opacity='0.6'; r.style.background='var(--gold-wash)'; r.style.zIndex='999';
-    e.preventDefault();
-  },{passive:false});
-  document.addEventListener('touchmove',function(e){
-    if(!di)return; e.preventDefault();
-    var t=e.touches[0], dy=t.clientY-sy;
-    di.style.transform='translateY('+dy+'px)';
-    var c=di.parentElement, rows=Array.from(c.querySelectorAll('.pri-row'));
-    var dr=di.getBoundingClientRect(), dm=dr.top+dr.height/2;
-    for(var i=0;i<rows.length;i++){
-      if(rows[i]===di)continue;
-      var rr=rows[i].getBoundingClientRect(), rm=rr.top+rr.height/2;
-      if(Math.abs(dm-rm)<rr.height/2){
-        if(dm<rm) c.insertBefore(di,rows[i]); else c.insertBefore(di,rows[i].nextSibling);
-        sy=t.clientY; di.style.transform=''; break;
-      }
-    }
-  },{passive:false});
-  document.addEventListener('touchend',function(){
-    if(!di)return;
-    di.style.opacity=''; di.style.background=''; di.style.transform=''; di.style.zIndex='';
-    var c=di.parentElement;
-    if(c){
-      var rows=c.querySelectorAll('.pri-row'), order=[];
-      rows.forEach(function(r){var k=r.getAttribute('data-key');if(k)order.push(k);});
-      if(typeof D!=='undefined'&&order.length){D.priorityOrder=order;if(typeof saveD==='function')saveD();}
-      rows.forEach(function(r,i){var n=r.querySelector('.pri-num');if(n)n.textContent=i+1;});
-    }
-    di=null;
-  });
-})();
-</script>
-
 </body>
 </html>`;
 }
@@ -2243,91 +2192,7 @@ function captureElementAsJpg(el, filename) {
 function buildPrintHtml(rec) {
   const html = buildStandaloneReportHtml(rec);
   if (!html) return '';
-  return html.replace('
-<script>
-// Touch drag for mobile priority sorting
-(function(){
-  var di=null,sy=0;
-  document.addEventListener('touchstart',function(e){
-    var h=e.target.closest('.drag-handle'); if(!h)return;
-    var r=h.closest('.pri-row'); if(!r)return;
-    di=r; sy=e.touches[0].clientY;
-    r.style.opacity='0.6'; r.style.background='var(--gold-wash)'; r.style.zIndex='999';
-    e.preventDefault();
-  },{passive:false});
-  document.addEventListener('touchmove',function(e){
-    if(!di)return; e.preventDefault();
-    var t=e.touches[0], dy=t.clientY-sy;
-    di.style.transform='translateY('+dy+'px)';
-    var c=di.parentElement, rows=Array.from(c.querySelectorAll('.pri-row'));
-    var dr=di.getBoundingClientRect(), dm=dr.top+dr.height/2;
-    for(var i=0;i<rows.length;i++){
-      if(rows[i]===di)continue;
-      var rr=rows[i].getBoundingClientRect(), rm=rr.top+rr.height/2;
-      if(Math.abs(dm-rm)<rr.height/2){
-        if(dm<rm) c.insertBefore(di,rows[i]); else c.insertBefore(di,rows[i].nextSibling);
-        sy=t.clientY; di.style.transform=''; break;
-      }
-    }
-  },{passive:false});
-  document.addEventListener('touchend',function(){
-    if(!di)return;
-    di.style.opacity=''; di.style.background=''; di.style.transform=''; di.style.zIndex='';
-    var c=di.parentElement;
-    if(c){
-      var rows=c.querySelectorAll('.pri-row'), order=[];
-      rows.forEach(function(r){var k=r.getAttribute('data-key');if(k)order.push(k);});
-      if(typeof D!=='undefined'&&order.length){D.priorityOrder=order;if(typeof saveD==='function')saveD();}
-      rows.forEach(function(r,i){var n=r.querySelector('.pri-num');if(n)n.textContent=i+1;});
-    }
-    di=null;
-  });
-})();
-</script>
-
-</body>', '<script>window.onload=function(){setTimeout(function(){window.print();},180)}<\/script>
-<script>
-// Touch drag for mobile priority sorting
-(function(){
-  var di=null,sy=0;
-  document.addEventListener('touchstart',function(e){
-    var h=e.target.closest('.drag-handle'); if(!h)return;
-    var r=h.closest('.pri-row'); if(!r)return;
-    di=r; sy=e.touches[0].clientY;
-    r.style.opacity='0.6'; r.style.background='var(--gold-wash)'; r.style.zIndex='999';
-    e.preventDefault();
-  },{passive:false});
-  document.addEventListener('touchmove',function(e){
-    if(!di)return; e.preventDefault();
-    var t=e.touches[0], dy=t.clientY-sy;
-    di.style.transform='translateY('+dy+'px)';
-    var c=di.parentElement, rows=Array.from(c.querySelectorAll('.pri-row'));
-    var dr=di.getBoundingClientRect(), dm=dr.top+dr.height/2;
-    for(var i=0;i<rows.length;i++){
-      if(rows[i]===di)continue;
-      var rr=rows[i].getBoundingClientRect(), rm=rr.top+rr.height/2;
-      if(Math.abs(dm-rm)<rr.height/2){
-        if(dm<rm) c.insertBefore(di,rows[i]); else c.insertBefore(di,rows[i].nextSibling);
-        sy=t.clientY; di.style.transform=''; break;
-      }
-    }
-  },{passive:false});
-  document.addEventListener('touchend',function(){
-    if(!di)return;
-    di.style.opacity=''; di.style.background=''; di.style.transform=''; di.style.zIndex='';
-    var c=di.parentElement;
-    if(c){
-      var rows=c.querySelectorAll('.pri-row'), order=[];
-      rows.forEach(function(r){var k=r.getAttribute('data-key');if(k)order.push(k);});
-      if(typeof D!=='undefined'&&order.length){D.priorityOrder=order;if(typeof saveD==='function')saveD();}
-      rows.forEach(function(r,i){var n=r.querySelector('.pri-num');if(n)n.textContent=i+1;});
-    }
-    di=null;
-  });
-})();
-</script>
-
-</body>');
+  return html.replace('</body>', '<script>window.onload=function(){setTimeout(function(){window.print();},180)}<\/script></body>');
 }
 function openPrintWindowWithHtml(html) {
   if (!html) { alert('当前没有可打印的报告。'); return; }
@@ -3405,6 +3270,16 @@ function getManualProduct() {
   return auto ? {...auto, __manual:true} : {...p, __manual:true};
 }
 
+function syncResultOrder() {
+  const autoNames = (_scoredProducts || []).map(p => p.name);
+  const manualName = D.manualPickName || '';
+  const validNames = new Set(autoNames.concat(manualName ? [manualName] : []));
+  const ordered = Array.isArray(D.resultOrder) ? D.resultOrder.filter(name => validNames.has(name)) : [];
+  autoNames.forEach(name => { if (!ordered.includes(name)) ordered.push(name); });
+  if (manualName && !ordered.includes(manualName)) ordered.push(manualName);
+  D.resultOrder = ordered;
+  return ordered;
+}
 
 function getOrderedProducts() {
   syncResultOrder();
@@ -3417,6 +3292,9 @@ function getOrderedProducts() {
   }).filter(Boolean);
 }
 
+function getFinalProducts() {
+  return getOrderedProducts().slice(0, 3);
+}
 
 function getCandidatePoolProducts() {
   return getOrderedProducts().slice(3);
@@ -3454,6 +3332,26 @@ function applyManualPickSearch() {
   if (input) setManualPickFromSearch(input.value);
 }
 
+function renderManualPickPanel() {
+  const current = D.manualPickName || '';
+  const opts = PRODUCTS.map(p => `<option value="${p.name}">${p.name}（${p.brand}）</option>`).join('');
+  return `
+    <div class="manual-pick-panel" style="margin:14px 0 8px;padding:14px 16px;border:1px dashed var(--rule-strong);border-radius:10px;background:rgba(255,255,255,0.72);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--espresso);">顾问手动加选位</div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">输入型号关键词即可搜索并加入候选池；系统后台保留 3 主推 + 2 备选，你可把加选款拖入前三进行替换，最终导出仍只显示 3 款。</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
+          <input list="manualPickOptions" id="manualPickSearch" value="${current}" placeholder="输入型号搜索，如：阳阳 / 亚当斯 / 曼哈顿" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualPickSearch();}" style="height:34px;min-width:280px;padding:0 10px;border:1px solid var(--rule-strong);border-radius:8px;background:#fff;color:var(--espresso);font-size:12px;">
+          <datalist id="manualPickOptions">${opts}</datalist>
+          <button onclick="applyManualPickSearch()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:var(--gold);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">加入候选池</button>
+          ${current ? '<button onclick="setManualPick(\'\')" style="height:34px;padding:0 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--cream);color:var(--driftwood);cursor:pointer;font-size:12px;">清除加选</button>' : ''}
+        </div>
+      </div>
+      ${current ? `<div style="margin-top:8px;font-size:11px;color:var(--gold-deep);font-weight:600;">当前加选：✨ ${current}</div>` : ''}
+    </div>`;
+}
 
 function setManualPick(name) {
   D.manualPickName = name || '';
@@ -3506,7 +3404,47 @@ function dropCandidateTo(slotIdx) {
   promoteCandidate(dragIdx, slotIdx);
 }
 
+function renderCandidatePool() {
+  const pool = getCandidatePoolProducts();
+  if (!pool.length) return '';
+  return `
+    <div class="candidate-pool-panel" style="margin:14px 0 8px;padding:16px;border:1px solid var(--rule-strong);border-radius:12px;background:rgba(255,255,255,0.76);box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--espresso);">候选替换池</div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">这里保留系统自动算出的 2 个备选，以及你手动加入的加选款。可直接拖到上方前三卡片，或点按钮替换到第 1 / 2 / 3 位。最终生成客户图片时，只出前三款。</div>
+        </div>
+        <div style="font-size:11px;color:var(--gold-deep);font-weight:600;">当前导出：仅前三款</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
+        ${pool.map((p, idx) => renderCandidatePoolCard(p, idx + 3)).join('')}
+      </div>
+    </div>`;
+}
 
+function renderCandidatePoolCard(p, globalIdx) {
+  const displayPrice = D.size && D.size!=='尺寸待定' ? getFixedPrice(p) : p.price_low;
+  const tag = p.__manual ? '✨ 顾问加选' : `备选 ${globalIdx - 2}`;
+  return `
+    <div draggable="true" ondragstart="startCandidateDrag(${globalIdx})" ondragend="clearCandidateDrag()" style="border:1px dashed var(--rule-strong);border-radius:10px;padding:12px;background:#fff;box-shadow:var(--shadow-sm);">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="min-width:0;">
+          <div style="font-size:10px;color:var(--sand);">${p.brand}</div>
+          <div style="font-size:14px;font-weight:700;color:var(--espresso);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+        </div>
+        <span style="display:inline-block;background:${p.__manual?'#fdf5e4':'#f4efe5'};color:${p.__manual?'#8B6914':'#7a6a52'};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">${tag}</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;flex-wrap:wrap;">
+        <div style="font-size:11px;color:var(--driftwood);">¥${displayPrice.toLocaleString()} · 软硬 ${p.firmness}/10</div>
+        <div style="font-size:11px;color:var(--sand);">拖到前三可替换</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;">
+        <button onclick="promoteCandidate(${globalIdx},0)" style="height:30px;border:none;border-radius:6px;background:var(--gold);color:#fff;cursor:pointer;font-size:11px;font-weight:700;">替换第1位</button>
+        <button onclick="promoteCandidate(${globalIdx},1)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第2位</button>
+        <button onclick="promoteCandidate(${globalIdx},2)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第3位</button>
+      </div>
+    </div>`;
+}
 
 function rerenderCards() {
   const rankLabel = ['I','II','III'];
@@ -4954,7 +4892,7 @@ try { updateRecordsBadge(); } catch(e){}
 </div>
 
 <script>
-// Touch drag for mobile priority sorting
+/* Touch drag for mobile priority sorting */
 (function(){
   var di=null,sy=0;
   document.addEventListener('touchstart',function(e){
@@ -4974,7 +4912,7 @@ try { updateRecordsBadge(); } catch(e){}
       if(rows[i]===di)continue;
       var rr=rows[i].getBoundingClientRect(), rm=rr.top+rr.height/2;
       if(Math.abs(dm-rm)<rr.height/2){
-        if(dm<rm) c.insertBefore(di,rows[i]); else c.insertBefore(di,rows[i].nextSibling);
+        if(dm<rm)c.insertBefore(di,rows[i]); else c.insertBefore(di,rows[i].nextSibling);
         sy=t.clientY; di.style.transform=''; break;
       }
     }
