@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>品牌家居大数据系统</title>
+<title>品牌家居顾问系统</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -739,20 +739,45 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
 @media(max-width: 768px) {
   .app-shell { grid-template-columns: 1fr; }
   .sidebar { display: none; }
-  .screen { padding: 50px 20px 60px; }
+  .screen { padding: 30px 16px 60px; }
   .opt-grid.c2 { grid-template-columns: 1fr; }
   .rec-card-body { grid-template-columns: 1fr; }
   .rec-scores { border-top: 1px solid var(--rule); }
   .confirm-row { grid-template-columns: 1fr; gap: 2px; }
+  /* 更大的触摸目标 */
+  .fld input, .fld select { font-size:16px !important; padding:12px 14px !important; min-height:48px; }
+  .chk { padding:14px 16px; }
+  .sel-card { padding:18px 12px 14px; }
+  .btn-next, .btn-back { min-height:48px; font-size:15px; }
+  .landing-title { font-size:28px; }
+  .landing-sub { font-size:12px; }
+  .step-title { font-size:20px; }
+  .step-sub { font-size:13px; line-height:1.6; }
+  .section-label { font-size:14px; }
+  /* 推荐卡片优化 */
+  .rec-card { margin-bottom:16px; }
+  .rec-card-name { font-size:16px; }
 }
 
 
 /* ═══ MODE SWITCHER ═══ */
-.mode-bar {
+.mode-bar-wrap {
   position:fixed; top:0; left:0; right:0; z-index:1000;
-  display:flex; justify-content:center; gap:0;
   background:linear-gradient(180deg,#1c1208 0%,#251a08 100%);
   border-bottom:1px solid rgba(154,120,40,0.3);
+}
+.mobile-site-title {
+  display:none; text-align:center; padding:10px 16px 0;
+  font-family:'Playfair Display',serif; font-size:15px; font-weight:600;
+  color:var(--ivory); letter-spacing:1px;
+}
+.mobile-site-title small {
+  display:block; font-family:'Cormorant Garamond',serif;
+  font-size:9px; letter-spacing:4px; color:var(--gold-mid);
+  text-transform:uppercase; margin-bottom:2px; font-weight:400;
+}
+.mode-bar {
+  display:flex; justify-content:center; gap:0;
   padding:10px 0;
 }
 .mode-btn {
@@ -770,6 +795,16 @@ input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.15); }
   height:2px; background:linear-gradient(90deg,transparent,#dbb84a,transparent);
 }
 body { padding-top:48px; }
+
+@media(max-width:768px) {
+  .mobile-site-title { display:block; }
+  body { padding-top:88px; }
+  .mode-bar { overflow-x:auto; -webkit-overflow-scrolling:touch; justify-content:flex-start; padding:8px 8px; gap:0; }
+  .mode-btn { padding:8px 14px; font-size:12px; letter-spacing:0.5px; white-space:nowrap; flex-shrink:0; }
+}
+@media(max-width:380px) {
+  .mode-btn { padding:7px 10px; font-size:11px; }
+}
 
 /* ═══ SEARCH PANEL ═══ */
 .search-panel {
@@ -875,12 +910,13 @@ body { padding-top:48px; }
 .pg-info { font-size:11px; color:var(--sand); margin:0 8px; }
 
 @media(max-width:768px) {
-  .mode-bar { gap:0; }
-  .mode-btn { padding:8px 16px; font-size:12px; }
-  .filter-bar { flex-direction:column; }
+  .filter-bar { flex-direction:column; padding:12px; }
+  .filter-bar input, .filter-bar select { font-size:16px; min-height:44px; }
+  .filter-bar input[type=text] { min-width:100%; }
   .sku-table { font-size:11px; }
-  .app-shell { grid-template-columns:1fr; }
-  .sidebar { display:none; }
+  .sku-table th, .sku-table td { padding:8px 6px; }
+  .search-header h2 { font-size:20px; }
+  .search-panel { padding:12px; }
 }
 
 
@@ -1054,17 +1090,41 @@ body { padding-top:48px; }
 }
 .rec-tip strong { color: var(--gold-deep); font-weight: 600; }
 
+/* ═══ MOBILE ENHANCEMENTS ═══ */
+@media(max-width:768px) {
+  .chat-area { height:calc(100vh - 140px); }
+  .chat-input input { font-size:16px; min-height:44px; }
+  .chat-input button { min-height:44px; padding:10px 16px; }
+  .qa-box { font-size:16px; min-height:70px; }
+  .btn-go { min-height:48px; font-size:15px; }
+  .qk-card-hd { padding:12px; flex-wrap:wrap; gap:8px; }
+  .qk-card-name { font-size:14px; }
+  .qk-card-score-v { font-size:18px; }
+  .qk-card-price-v { font-size:13px; }
+  .qk-size-btn { padding:8px 12px; font-size:13px; min-height:36px; }
+  .ex-tag { padding:8px 12px; font-size:12px; }
+  #quotationModal > div { margin:10px; max-width:100%; }
+}
+@media(max-width:380px) {
+  .qk-card-hd { gap:6px; }
+  .qk-rank { width:26px; height:26px; font-size:12px; }
+  .qk-card-name { font-size:13px; }
+}
+
 
 </style>
 </head>
 <body>
 
 <!-- ═══ MODE SWITCHER ═══ -->
-<div class="mode-bar">
-  <button class="mode-btn active" onclick="switchMode('search')">📊 SKU检索</button>
-  <button class="mode-btn" onclick="switchMode('advisor')">🛏️ 睡眠顾问</button>
-  <button class="mode-btn" onclick="switchMode('quick')">⚡ 快速推荐</button>
-  <button class="mode-btn" onclick="switchMode('chat')">💬 AI对话</button>
+<div class="mode-bar-wrap">
+  <div class="mobile-site-title"><small>Premium Advisor</small>品牌家居顾问系统</div>
+  <div class="mode-bar">
+    <button class="mode-btn active" onclick="switchMode('search')">📊 SKU检索</button>
+    <button class="mode-btn" onclick="switchMode('advisor')">🛏️ 睡眠顾问</button>
+    <button class="mode-btn" onclick="switchMode('quick')">⚡ 快速推荐</button>
+    <button class="mode-btn" onclick="switchMode('chat')">💬 AI对话</button>
+  </div>
 </div>
 
 <!-- ═══ SEARCH MODE ═══ -->
