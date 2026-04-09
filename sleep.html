@@ -1738,25 +1738,25 @@ function renderSKU() {
 
   const tbody = document.getElementById('skuBody');
   tbody.innerHTML = slice.map(r => `<tr>
-    <td><span class="badge ${badgeClass[r[0]]||''}">${r[0]}</span></td>
-    <td>${r[1]}</td>
-    <td><strong>${r[2]}</strong></td>
-    <td>${r[3]}</td>
-    <td>${r[6]?r[6]+'cm':''}</td>
-    <td>${r[8]||''}</td>
-    <td class="price">${r[5]?'¥'+r[5].toLocaleString():''}</td>
-    <td class="xianyu">${r[7]?'¥'+r[7].toLocaleString():''}</td>
-    <td class="crafts-cell" title="${r[9]||''}">${r[9]||''}</td>
-  </tr>`).join('');
+    <td><span class="badge ${badgeClass[r[0]]||''}">${r[0]}<\/span><\/td>
+    <td>${r[1]}<\/td>
+    <td><strong>${r[2]}<\/strong><\/td>
+    <td>${r[3]}<\/td>
+    <td>${r[6]?r[6]+'cm':''}<\/td>
+    <td>${r[8]||''}<\/td>
+    <td class="price">${r[5]?'¥'+r[5].toLocaleString():''}<\/td>
+    <td class="xianyu">${r[7]?'¥'+r[7].toLocaleString():''}<\/td>
+    <td class="crafts-cell" title="${r[9]||''}">${r[9]||''}<\/td>
+  <\/tr>`).join('');
 
   // Pagination
   const pgBar = document.getElementById('pgBar');
-  let pgHTML = `<button class="pg-btn" onclick="skuPage=1;renderSKU()" ${skuPage<=1?'disabled':''}>首页</button>`;
-  pgHTML += `<button class="pg-btn" onclick="skuPage--;renderSKU()" ${skuPage<=1?'disabled':''}>‹</button>`;
+  let pgHTML = `<button class="pg-btn" onclick="skuPage=1;renderSKU()" ${skuPage<=1?'disabled':''}>首页<\/button>`;
+  pgHTML += `<button class="pg-btn" onclick="skuPage--;renderSKU()" ${skuPage<=1?'disabled':''}>‹<\/button>`;
   const s2=Math.max(1,skuPage-3), e2=Math.min(pages,skuPage+3);
-  for(let i=s2;i<=e2;i++) pgHTML+=`<button class="pg-btn ${i===skuPage?'active':''}" onclick="skuPage=${i};renderSKU()">${i}</button>`;
-  pgHTML += `<button class="pg-btn" onclick="skuPage++;renderSKU()" ${skuPage>=pages?'disabled':''}>›</button>`;
-  pgHTML += `<button class="pg-btn" onclick="skuPage=${pages};renderSKU()" ${skuPage>=pages?'disabled':''}>末页</button>`;
+  for(let i=s2;i<=e2;i++) pgHTML+=`<button class="pg-btn ${i===skuPage?'active':''}" onclick="skuPage=${i};renderSKU()">${i}<\/button>`;
+  pgHTML += `<button class="pg-btn" onclick="skuPage++;renderSKU()" ${skuPage>=pages?'disabled':''}>›<\/button>`;
+  pgHTML += `<button class="pg-btn" onclick="skuPage=${pages};renderSKU()" ${skuPage>=pages?'disabled':''}>末页<\/button>`;
   pgBar.innerHTML = pgHTML;
 }
 
@@ -2069,7 +2069,7 @@ function buildStandaloneReportHtml(rec) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${title}</title>
+<title>${title}<\/title>
 <style>${styles}
 body{padding:24px;background:#f4ede0;font-family:'PingFang SC','Microsoft YaHei',system-ui,sans-serif;}
 .snapshot-shell{max-width:960px;margin:0 auto;}
@@ -2107,19 +2107,19 @@ body{padding:24px;background:#f4ede0;font-family:'PingFang SC','Microsoft YaHei'
   #s0 { padding-top:56px!important; }
   .app-shell, .main-content { min-height:auto!important; }
 }
-</style>
-</head>
+<\/style>
+<\/head>
 <body>
   <div class="snapshot-shell">
     <div class="snapshot-meta">
-      <div><strong>客户：</strong>${rec.name || '—'}</div>
-      <div><strong>保存时间：</strong>${rec.date || snap.savedAt || '—'}</div>
-      <div><strong>客户摘要：</strong>${rec.summary || snap.summary || '—'}</div>
-    </div>
-    <div class="result-report">${snap.reportHtml}</div>
-  </div>
-</body>
-</html>`;
+      <div><strong>客户：<\/strong>${rec.name || '—'}<\/div>
+      <div><strong>保存时间：<\/strong>${rec.date || snap.savedAt || '—'}<\/div>
+      <div><strong>客户摘要：<\/strong>${rec.summary || snap.summary || '—'}<\/div>
+    <\/div>
+    <div class="result-report">${snap.reportHtml}<\/div>
+  <\/div>
+<\/body>
+<\/html>`;
 }
 function openReportPreview(id) {
   const rec = getRecords().find(r => r.id === id);
@@ -2129,8 +2129,8 @@ function openReportPreview(id) {
   if (!modal) return;
   const meta = document.getElementById('reportPreviewMeta');
   const body = document.getElementById('reportPreviewBody');
-  if (meta) meta.innerHTML = `客户：<strong>${rec.name || '—'}</strong>　｜　保存时间：${rec.date || rec.reportSnapshot.savedAt || '—'}　｜　摘要：${rec.summary || rec.reportSnapshot.summary || '—'}`;
-  if (body) body.innerHTML = `<div class="result-report">${rec.reportSnapshot.reportHtml}</div>`;
+  if (meta) meta.innerHTML = `客户：<strong>${rec.name || '—'}<\/strong>　｜　保存时间：${rec.date || rec.reportSnapshot.savedAt || '—'}　｜　摘要：${rec.summary || rec.reportSnapshot.summary || '—'}`;
+  if (body) body.innerHTML = `<div class="result-report">${rec.reportSnapshot.reportHtml}<\/div>`;
   window.__openedReportRecordId = id;
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -2192,7 +2192,7 @@ function captureElementAsJpg(el, filename) {
 function buildPrintHtml(rec) {
   const html = buildStandaloneReportHtml(rec);
   if (!html) return '';
-  return html.replace('</body>', '<script>window.onload=function(){setTimeout(function(){window.print();},180)}<\/script></body>');
+  return html.replace('<\/body>', '<script>window.onload=function(){setTimeout(function(){window.print();},180)}<\/script><\/body>');
 }
 function openPrintWindowWithHtml(html) {
   if (!html) { alert('当前没有可打印的报告。'); return; }
@@ -2330,27 +2330,27 @@ function renderRecordsList() {
   const el = document.getElementById('recordsList');
   updateRecordsBadge();
   if (!records.length) {
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--driftwood);font-size:12px;">暂无保存的客户记录</div>';
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--driftwood);font-size:12px;">暂无保存的客户记录<\/div>';
     return;
   }
   el.innerHTML = records.map(r => `
     <div style="padding:10px 12px;border:1px solid var(--rule);border-radius:8px;margin-bottom:8px;background:#fff;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:14px;font-weight:600;color:var(--espresso);word-break:break-all;">${r.name}</div>
-          <div style="font-size:11px;color:var(--driftwood);margin-top:2px;">${r.date}</div>
-          <div style="font-size:11px;color:var(--bark);margin-top:4px;">${r.summary || ''}</div>
-          <div style="font-size:10px;color:${r.reportSnapshot && r.reportSnapshot.reportHtml ? 'var(--sage)' : 'var(--sand)'};margin-top:6px;">${r.reportSnapshot && r.reportSnapshot.reportHtml ? '已保存报告快照，可直接查看历史报告' : '当前仅保存了客户数据，还没有历史报告快照'}</div>
-        </div>
+          <div style="font-size:14px;font-weight:600;color:var(--espresso);word-break:break-all;">${r.name}<\/div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:2px;">${r.date}<\/div>
+          <div style="font-size:11px;color:var(--bark);margin-top:4px;">${r.summary || ''}<\/div>
+          <div style="font-size:10px;color:${r.reportSnapshot && r.reportSnapshot.reportHtml ? 'var(--sage)' : 'var(--sand)'};margin-top:6px;">${r.reportSnapshot && r.reportSnapshot.reportHtml ? '已保存报告快照，可直接查看历史报告' : '当前仅保存了客户数据，还没有历史报告快照'}<\/div>
+        <\/div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:230px;">
-          <button onclick="loadCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:var(--gold);color:#fff;border:none;border-radius:4px;cursor:pointer;">加载</button>
-          ${r.reportSnapshot && r.reportSnapshot.reportHtml ? `<button onclick="openReportPreview(${r.id})" style="padding:4px 10px;font-size:11px;background:#2a6b3a;color:#fff;border:none;border-radius:4px;cursor:pointer;">看报告</button>` : ''}
+          <button onclick="loadCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:var(--gold);color:#fff;border:none;border-radius:4px;cursor:pointer;">加载<\/button>
+          ${r.reportSnapshot && r.reportSnapshot.reportHtml ? `<button onclick="openReportPreview(${r.id})" style="padding:4px 10px;font-size:11px;background:#2a6b3a;color:#fff;border:none;border-radius:4px;cursor:pointer;">看报告<\/button>` : ''}
           
-          <button onclick="downloadSingleRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:#fff;color:var(--gold-deep);border:1px solid var(--rule-strong);border-radius:4px;cursor:pointer;">导出记录</button>
-          <button onclick="deleteCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:transparent;color:#c88;border:1px solid #daa;border-radius:4px;cursor:pointer;">删除</button>
-        </div>
-      </div>
-    </div>
+          <button onclick="downloadSingleRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:#fff;color:var(--gold-deep);border:1px solid var(--rule-strong);border-radius:4px;cursor:pointer;">导出记录<\/button>
+          <button onclick="deleteCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:transparent;color:#c88;border:1px solid #daa;border-radius:4px;cursor:pointer;">删除<\/button>
+        <\/div>
+      <\/div>
+    <\/div>
   `).join('');
 }
 function downloadSingleRecord(id) {
@@ -2463,13 +2463,13 @@ function updateSidebar() {
     const val = getStepSummary(s.id);
     return `
       <div class="step-item ${status}" onclick="${isVisited && s.id !== currentStep ?'go('+s.id+')':''}">
-        <div class="step-dot">${isVisited && s.id !== currentStep?'✓':s.id}</div>
+        <div class="step-dot">${isVisited && s.id !== currentStep?'✓':s.id}<\/div>
         <div class="step-text">
-          <div class="step-name">${s.name}</div>
-          ${val ? `<div class="step-val">${val}</div>` : ''}
-        </div>
-        ${i < STEPS.length-1 ? '<div class="step-line"></div>' : ''}
-      </div>`;
+          <div class="step-name">${s.name}<\/div>
+          ${val ? `<div class="step-val">${val}<\/div>` : ''}
+        <\/div>
+        ${i < STEPS.length-1 ? '<div class="step-line"><\/div>' : ''}
+      <\/div>`;
   }).join('');
 
   // Show floating "返回结果" button when not on results page but results have been generated
@@ -2535,11 +2535,11 @@ function buildProfileRows() {
   const el = document.getElementById('profileRows');
   el.innerHTML = rows.filter(r => r[1]).map(([k,v]) => `
     <div class="profile-row visible">
-      <span class="profile-key">${k}</span>
-      <span class="profile-val">${v}</span>
-    </div>`).join('');
+      <span class="profile-key">${k}<\/span>
+      <span class="profile-val">${v}<\/span>
+    <\/div>`).join('');
   if (!rows.some(r => r[1])) {
-    el.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,0.15);padding:8px 0;letter-spacing:1px">开始评测后自动填充</div>';
+    el.innerHTML = '<div style="font-size:11px;color:rgba(255,255,255,0.15);padding:8px 0;letter-spacing:1px">开始评测后自动填充<\/div>';
   }
 }
 
@@ -2760,7 +2760,7 @@ function savePri() {
 function buildConfirm() {
   var t = document.getElementById('confirmTable');
   if (!t) return;
-  var row = function(k,v) { return '<div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--rule);padding:8px 0"><div style="font-size:11px;color:var(--driftwood);font-weight:700">' + k + '</div><div style="font-size:13px;color:var(--bark)">' + (v||'—') + '</div></div>'; };
+  var row = function(k,v) { return '<div style="display:grid;grid-template-columns:140px 1fr;border-bottom:1px solid var(--rule);padding:8px 0"><div style="font-size:11px;color:var(--driftwood);font-weight:700">' + k + '<\/div><div style="font-size:13px;color:var(--bark)">' + (v||'—') + '<\/div><\/div>'; };
   var arrJ = function(arr) { return (arr||[]).join('、') || '—'; };
   var pri = [];
   document.querySelectorAll('.pri-item').forEach(function(el) { pri.push(el.getAttribute('data-val')); });
@@ -3334,23 +3334,23 @@ function applyManualPickSearch() {
 
 function renderManualPickPanel() {
   const current = D.manualPickName || '';
-  const opts = PRODUCTS.map(p => `<option value="${p.name}">${p.name}（${p.brand}）</option>`).join('');
+  const opts = PRODUCTS.map(p => `<option value="${p.name}">${p.name}（${p.brand}）<\/option>`).join('');
   return `
     <div class="manual-pick-panel" style="margin:14px 0 8px;padding:14px 16px;border:1px dashed var(--rule-strong);border-radius:10px;background:rgba(255,255,255,0.72);">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div>
-          <div style="font-size:12px;font-weight:700;color:var(--espresso);">顾问手动加选位</div>
-          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">输入型号关键词即可搜索并加入候选池；系统后台保留 3 主推 + 2 备选，你可把加选款拖入前三进行替换，最终导出仍只显示 3 款。</div>
-        </div>
+          <div style="font-size:12px;font-weight:700;color:var(--espresso);">顾问手动加选位<\/div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">输入型号关键词即可搜索并加入候选池；系统后台保留 3 主推 + 2 备选，你可把加选款拖入前三进行替换，最终导出仍只显示 3 款。<\/div>
+        <\/div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
           <input list="manualPickOptions" id="manualPickSearch" value="${current}" placeholder="输入型号搜索，如：阳阳 / 亚当斯 / 曼哈顿" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualPickSearch();}" style="height:34px;min-width:280px;padding:0 10px;border:1px solid var(--rule-strong);border-radius:8px;background:#fff;color:var(--espresso);font-size:12px;">
-          <datalist id="manualPickOptions">${opts}</datalist>
-          <button onclick="applyManualPickSearch()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:var(--gold);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">加入候选池</button>
-          ${current ? '<button onclick="setManualPick(\'\')" style="height:34px;padding:0 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--cream);color:var(--driftwood);cursor:pointer;font-size:12px;">清除加选</button>' : ''}
-        </div>
-      </div>
-      ${current ? `<div style="margin-top:8px;font-size:11px;color:var(--gold-deep);font-weight:600;">当前加选：✨ ${current}</div>` : ''}
-    </div>`;
+          <datalist id="manualPickOptions">${opts}<\/datalist>
+          <button onclick="applyManualPickSearch()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:var(--gold);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">加入候选池<\/button>
+          ${current ? '<button onclick="setManualPick(\'\')" style="height:34px;padding:0 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--cream);color:var(--driftwood);cursor:pointer;font-size:12px;">清除加选<\/button>' : ''}
+        <\/div>
+      <\/div>
+      ${current ? `<div style="margin-top:8px;font-size:11px;color:var(--gold-deep);font-weight:600;">当前加选：✨ ${current}<\/div>` : ''}
+    <\/div>`;
 }
 
 function setManualPick(name) {
@@ -3411,15 +3411,15 @@ function renderCandidatePool() {
     <div class="candidate-pool-panel" style="margin:14px 0 8px;padding:16px;border:1px solid var(--rule-strong);border-radius:12px;background:rgba(255,255,255,0.76);box-shadow:var(--shadow-sm);">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
         <div>
-          <div style="font-size:12px;font-weight:700;color:var(--espresso);">候选替换池</div>
-          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">这里保留系统自动算出的 2 个备选，以及你手动加入的加选款。可直接拖到上方前三卡片，或点按钮替换到第 1 / 2 / 3 位。最终生成客户图片时，只出前三款。</div>
-        </div>
-        <div style="font-size:11px;color:var(--gold-deep);font-weight:600;">当前导出：仅前三款</div>
-      </div>
+          <div style="font-size:12px;font-weight:700;color:var(--espresso);">候选替换池<\/div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">这里保留系统自动算出的 2 个备选，以及你手动加入的加选款。可直接拖到上方前三卡片，或点按钮替换到第 1 / 2 / 3 位。最终生成客户图片时，只出前三款。<\/div>
+        <\/div>
+        <div style="font-size:11px;color:var(--gold-deep);font-weight:600;">当前导出：仅前三款<\/div>
+      <\/div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
         ${pool.map((p, idx) => renderCandidatePoolCard(p, idx + 3)).join('')}
-      </div>
-    </div>`;
+      <\/div>
+    <\/div>`;
 }
 
 function renderCandidatePoolCard(p, globalIdx) {
@@ -3429,21 +3429,21 @@ function renderCandidatePoolCard(p, globalIdx) {
     <div draggable="true" ondragstart="startCandidateDrag(${globalIdx})" ondragend="clearCandidateDrag()" style="border:1px dashed var(--rule-strong);border-radius:10px;padding:12px;background:#fff;box-shadow:var(--shadow-sm);">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <div style="min-width:0;">
-          <div style="font-size:10px;color:var(--sand);">${p.brand}</div>
-          <div style="font-size:14px;font-weight:700;color:var(--espresso);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-        </div>
-        <span style="display:inline-block;background:${p.__manual?'#fdf5e4':'#f4efe5'};color:${p.__manual?'#8B6914':'#7a6a52'};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">${tag}</span>
-      </div>
+          <div style="font-size:10px;color:var(--sand);">${p.brand}<\/div>
+          <div style="font-size:14px;font-weight:700;color:var(--espresso);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}<\/div>
+        <\/div>
+        <span style="display:inline-block;background:${p.__manual?'#fdf5e4':'#f4efe5'};color:${p.__manual?'#8B6914':'#7a6a52'};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">${tag}<\/span>
+      <\/div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        <div style="font-size:11px;color:var(--driftwood);">¥${displayPrice.toLocaleString()} · 软硬 ${p.firmness}/10</div>
-        <div style="font-size:11px;color:var(--sand);">拖到前三可替换</div>
-      </div>
+        <div style="font-size:11px;color:var(--driftwood);">¥${displayPrice.toLocaleString()} · 软硬 ${p.firmness}/10<\/div>
+        <div style="font-size:11px;color:var(--sand);">拖到前三可替换<\/div>
+      <\/div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;">
-        <button onclick="promoteCandidate(${globalIdx},0)" style="height:30px;border:none;border-radius:6px;background:var(--gold);color:#fff;cursor:pointer;font-size:11px;font-weight:700;">替换第1位</button>
-        <button onclick="promoteCandidate(${globalIdx},1)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第2位</button>
-        <button onclick="promoteCandidate(${globalIdx},2)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第3位</button>
-      </div>
-    </div>`;
+        <button onclick="promoteCandidate(${globalIdx},0)" style="height:30px;border:none;border-radius:6px;background:var(--gold);color:#fff;cursor:pointer;font-size:11px;font-weight:700;">替换第1位<\/button>
+        <button onclick="promoteCandidate(${globalIdx},1)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第2位<\/button>
+        <button onclick="promoteCandidate(${globalIdx},2)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第3位<\/button>
+      <\/div>
+    <\/div>`;
 }
 
 function rerenderCards() {
@@ -3458,7 +3458,7 @@ function rerenderCards() {
   if (poolWrap) poolWrap.innerHTML = renderCandidatePool();
   const sp = document.querySelector('.sales-panel-text');
   if (sp && finalProducts[0]) {
-    sp.innerHTML = '<strong>首推「' + finalProducts[0].name + '」：</strong>' + finalProducts[0].sales_tip;
+    sp.innerHTML = '<strong>首推「' + finalProducts[0].name + '」：<\/strong>' + finalProducts[0].sales_tip;
   }
 }
 
@@ -3534,12 +3534,12 @@ function buildQuotationPreview() {
   function bar(label, val) {
     const w = Math.round(val/10*100);
     return `<div style="display:table;width:100%;margin-bottom:3px;">
-      <div style="display:table-cell;width:42px;font-size:10px;color:#888;vertical-align:middle;">${label}</div>
+      <div style="display:table-cell;width:42px;font-size:10px;color:#888;vertical-align:middle;">${label}<\/div>
       <div style="display:table-cell;vertical-align:middle;padding:0 6px;">
-        <div style="background:#ede8de;border-radius:3px;height:6px;"><div style="background:linear-gradient(90deg,#C5A55A,#8B6914);border-radius:3px;height:6px;width:${w}px;max-width:100%;"></div></div>
-      </div>
-      <div style="display:table-cell;width:16px;font-size:10px;font-weight:600;color:#5c4a2f;text-align:right;vertical-align:middle;">${val}</div>
-    </div>`;
+        <div style="background:#ede8de;border-radius:3px;height:6px;"><div style="background:linear-gradient(90deg,#C5A55A,#8B6914);border-radius:3px;height:6px;width:${w}px;max-width:100%;"><\/div><\/div>
+      <\/div>
+      <div style="display:table-cell;width:16px;font-size:10px;font-weight:600;color:#5c4a2f;text-align:right;vertical-align:middle;">${val}<\/div>
+    <\/div>`;
   }
 
   // Customer profile tags
@@ -3563,36 +3563,36 @@ function buildQuotationPreview() {
   const preview = document.getElementById('quotationPreview');
   preview.innerHTML = `
     <div style="background:#fff;width:680px;padding:44px 36px;font-family:'PingFang SC','Microsoft YaHei',sans-serif;position:relative;overflow:hidden;" id="quotationCapture">
-      <!-- Watermark -->
+      <\!-- Watermark -->
       <div style="position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0.07;transform:rotate(-30deg);font-size:20px;font-weight:700;color:#8B7355;line-height:4;text-align:justify;overflow:hidden;">
         ${'品牌床垫终极折扣 19025413610 '.repeat(80)}
-      </div>
+      <\/div>
 
-      <!-- Header -->
+      <\!-- Header -->
       <div style="text-align:center;margin-bottom:22px;position:relative;">
-        <div style="font-size:26px;font-weight:800;letter-spacing:5px;color:#2c2c2c;">专属睡眠方案</div>
-        <div style="font-size:11px;color:#aaa;letter-spacing:3px;margin-top:3px;">PERSONALIZED SLEEP SOLUTION</div>
-        ${D.clientName ? `<div style="font-size:15px;font-weight:700;color:#8B6914;margin-top:8px;letter-spacing:2px;">— ${D.clientName} 专属 —</div>` : ''}
-        <div style="font-size:11px;color:#aaa;margin-top:5px;">${dateStr} | 品牌床垫终极折扣</div>
-      </div>
+        <div style="font-size:26px;font-weight:800;letter-spacing:5px;color:#2c2c2c;">专属睡眠方案<\/div>
+        <div style="font-size:11px;color:#aaa;letter-spacing:3px;margin-top:3px;">PERSONALIZED SLEEP SOLUTION<\/div>
+        ${D.clientName ? `<div style="font-size:15px;font-weight:700;color:#8B6914;margin-top:8px;letter-spacing:2px;">— ${D.clientName} 专属 —<\/div>` : ''}
+        <div style="font-size:11px;color:#aaa;margin-top:5px;">${dateStr} | 品牌床垫终极折扣<\/div>
+      <\/div>
 
-      <!-- Customer Profile -->
+      <\!-- Customer Profile -->
       <div style="border:1px solid #e8e0d0;border-radius:8px;padding:14px 16px;margin-bottom:16px;background:#faf8f5;">
-        <div style="font-size:11px;font-weight:700;color:#5c4a2f;margin-bottom:6px;">👤 客户档案</div>
+        <div style="font-size:11px;font-weight:700;color:#5c4a2f;margin-bottom:6px;">👤 客户档案<\/div>
         <div style="line-height:2;">
-          ${profileTags.map(t=>`<span style="display:inline-block;background:#fff;border:1px solid #e0d8c8;border-radius:4px;padding:2px 10px;font-size:11px;color:#5c4a2f;margin:0 4px 0 0;">${t}</span>`).join('')}
-        </div>
+          ${profileTags.map(t=>`<span style="display:inline-block;background:#fff;border:1px solid #e0d8c8;border-radius:4px;padding:2px 10px;font-size:11px;color:#5c4a2f;margin:0 4px 0 0;">${t}<\/span>`).join('')}
+        <\/div>
         ${needTags.length ? `
-        <div style="font-size:11px;font-weight:700;color:#5c4a2f;margin:8px 0 4px;">🎯 核心需求</div>
+        <div style="font-size:11px;font-weight:700;color:#5c4a2f;margin:8px 0 4px;">🎯 核心需求<\/div>
         <div style="line-height:2;">
-          ${needTags.map(t=>`<span style="display:inline-block;background:#5c4a2f;border-radius:4px;padding:2px 10px;font-size:11px;color:#f5e6c8;margin:0 4px 0 0;">${t}</span>`).join('')}
-        </div>` : ''}
-      </div>
+          ${needTags.map(t=>`<span style="display:inline-block;background:#5c4a2f;border-radius:4px;padding:2px 10px;font-size:11px;color:#f5e6c8;margin:0 4px 0 0;">${t}<\/span>`).join('')}
+        <\/div>` : ''}
+      <\/div>
 
-      <!-- Section title -->
-      <div style="font-size:13px;font-weight:700;color:#5c4a2f;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #5c4a2f;">为您精选 3 款高匹配推荐（最终客户版仅展示这 3 款）</div>
+      <\!-- Section title -->
+      <div style="font-size:13px;font-weight:700;color:#5c4a2f;margin-bottom:10px;padding-bottom:5px;border-bottom:2px solid #5c4a2f;">为您精选 3 款高匹配推荐（最终客户版仅展示这 3 款）<\/div>
 
-      <!-- Product Cards -->
+      <\!-- Product Cards -->
       ${getFinalProducts().map((p, i) => {
         const price = getPrice(p, i);
         const thick = getThickness(p);
@@ -3606,83 +3606,83 @@ function buildQuotationPreview() {
 
         return `
       <div style="border:${isPrimary?'2px solid #C5A55A':'1px solid #e0d8c8'};border-radius:10px;margin-bottom:12px;overflow:hidden;position:relative;">
-        <!-- Badge -->
-        <div style="position:absolute;top:0;right:14px;background:${isPrimary?'linear-gradient(135deg,#8B6914,#C5A55A)':'#999'};color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 0 6px 6px;letter-spacing:1px;">${isPrimary?'⭐ 首推':schemeNames[i]||'备选'}</div>
+        <\!-- Badge -->
+        <div style="position:absolute;top:0;right:14px;background:${isPrimary?'linear-gradient(135deg,#8B6914,#C5A55A)':'#999'};color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 0 6px 6px;letter-spacing:1px;">${isPrimary?'⭐ 首推':schemeNames[i]||'备选'}<\/div>
 
-        <!-- Title row: table layout -->
+        <\!-- Title row: table layout -->
         <div style="padding:26px 16px 10px;">
           <div style="display:table;width:100%;">
             <div style="display:table-cell;vertical-align:top;">
-              <div style="font-size:10px;color:#999;">${p.brand}</div>
-              <div style="font-size:18px;font-weight:800;color:#2c2c2c;letter-spacing:1px;">${p.name}</div>
-              <div style="font-size:10px;color:#999;margin-top:1px;">${p.en}</div>
-            </div>
+              <div style="font-size:10px;color:#999;">${p.brand}<\/div>
+              <div style="font-size:18px;font-weight:800;color:#2c2c2c;letter-spacing:1px;">${p.name}<\/div>
+              <div style="font-size:10px;color:#999;margin-top:1px;">${p.en}<\/div>
+            <\/div>
             <div style="display:table-cell;vertical-align:top;text-align:right;width:140px;padding-top:2px;">
-              <div style="font-size:24px;font-weight:800;color:#8B6914;">¥${price.toLocaleString()}</div>
-              <div style="font-size:10px;color:#999;">${sizeNum?sizeRaw+'尺寸价':'起步价'}</div>
-              <div style="margin-top:3px;"><span style="display:inline-block;background:${selectedBadge.palette.bg};color:${selectedBadge.palette.color};font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;border:1px solid ${selectedBadge.palette.color}30;letter-spacing:1px;">🏷 ${selectedBadge.label}</span></div>
-            </div>
-          </div>
-        </div>
+              <div style="font-size:24px;font-weight:800;color:#8B6914;">¥${price.toLocaleString()}<\/div>
+              <div style="font-size:10px;color:#999;">${sizeNum?sizeRaw+'尺寸价':'起步价'}<\/div>
+              <div style="margin-top:3px;"><span style="display:inline-block;background:${selectedBadge.palette.bg};color:${selectedBadge.palette.color};font-size:9px;font-weight:700;padding:2px 8px;border-radius:3px;border:1px solid ${selectedBadge.palette.color}30;letter-spacing:1px;">🏷 ${selectedBadge.label}<\/span><\/div>
+            <\/div>
+          <\/div>
+        <\/div>
 
-        <!-- Spec row -->
+        <\!-- Spec row -->
         <div style="padding:0 16px 10px;line-height:2;">
-          ${spec?`<span style="display:inline-block;background:#f5f0e6;border-radius:4px;padding:2px 9px;font-size:11px;color:#5c4a2f;font-weight:600;margin-right:6px;">📐 ${spec}</span>`:''}
-          <span style="display:inline-block;background:#f5f0e6;border-radius:4px;padding:2px 9px;font-size:11px;color:#5c4a2f;font-weight:600;margin-right:6px;">💤 ${fTxt}(${p.firmness}/10)</span>
-          <span style="display:inline-block;background:#f5f0e6;border-radius:4px;padding:2px 9px;font-size:11px;color:#5c4a2f;font-weight:600;">🧱 ${p.material.join('+')}</span>
-        </div>
+          ${spec?`<span style="display:inline-block;background:#f5f0e6;border-radius:4px;padding:2px 9px;font-size:11px;color:#5c4a2f;font-weight:600;margin-right:6px;">📐 ${spec}<\/span>`:''}
+          <span style="display:inline-block;background:#f5f0e6;border-radius:4px;padding:2px 9px;font-size:11px;color:#5c4a2f;font-weight:600;margin-right:6px;">💤 ${fTxt}(${p.firmness}/10)<\/span>
+          <span style="display:inline-block;background:#f5f0e6;border-radius:4px;padding:2px 9px;font-size:11px;color:#5c4a2f;font-weight:600;">🧱 ${p.material.join('+')}<\/span>
+        <\/div>
 
-        <!-- Score bars: 2-column table -->
+        <\!-- Score bars: 2-column table -->
         <div style="padding:0 16px 8px;">
           <div style="display:table;width:100%;">
             <div style="display:table-cell;width:50%;padding-right:8px;vertical-align:top;">
               ${bar('支撑',p.support)}
               ${bar('舒适',p.comfort)}
-            </div>
+            <\/div>
             <div style="display:table-cell;width:50%;padding-left:8px;vertical-align:top;">
               ${bar('抗扰',p.motion_isolation)}
               ${bar('耐久',p.durability)}
-            </div>
-          </div>
-        </div>
+            <\/div>
+          <\/div>
+        <\/div>
 
-        <!-- Feature tags -->
+        <\!-- Feature tags -->
         <div style="padding:0 16px 8px;line-height:2;">
-          ${featureTags.map(t=>`<span style="display:inline-block;border:1px solid #e0d8c8;border-radius:3px;padding:1px 7px;font-size:10px;color:#8B7355;margin-right:4px;">${t}</span>`).join('')}
-        </div>
+          ${featureTags.map(t=>`<span style="display:inline-block;border:1px solid #e0d8c8;border-radius:3px;padding:1px 7px;font-size:10px;color:#8B7355;margin-right:4px;">${t}<\/span>`).join('')}
+        <\/div>
 
-        <!-- Recommendation reason -->
+        <\!-- Recommendation reason -->
         <div style="margin:0 16px 14px;background:#faf8f5;border-radius:6px;padding:8px 12px;font-size:11px;color:#5c4a2f;">
-          <strong>推荐理由：</strong>${reasons.join(' · ')}
-        </div>
-      </div>`;
+          <strong>推荐理由：<\/strong>${reasons.join(' · ')}
+        <\/div>
+      <\/div>`;
       }).join('')}
 
-      <!-- Service Guarantee -->
+      <\!-- Service Guarantee -->
       <div style="border:1px solid #e8e0d0;border-radius:8px;padding:14px;margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🛡 八大服务承诺 <span style="font-size:10px;color:#999;font-weight:400;">SERVICE GUARANTEE</span></div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:8px;">🛡 八大服务承诺 <span style="font-size:10px;color:#999;font-weight:400;">SERVICE GUARANTEE<\/span><\/div>
         <div style="display:table;width:100%;font-size:10px;text-align:center;">
           <div style="display:table-row;">
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">✔</div><div style="font-weight:600;">正品保障</div><div style="color:#999;font-size:8px;">扫码验真·假一赔十</div></div>
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🚚</div><div style="font-weight:600;">全国包邮</div><div style="color:#999;font-size:8px;">品牌仓直发</div></div>
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🔧</div><div style="font-weight:600;">免费安装</div><div style="color:#999;font-size:8px;">专业师傅上门</div></div>
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🛡</div><div style="font-weight:600;">官方质保</div><div style="color:#999;font-size:8px;">全国联保</div></div>
-          </div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">✔<\/div><div style="font-weight:600;">正品保障<\/div><div style="color:#999;font-size:8px;">扫码验真·假一赔十<\/div><\/div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🚚<\/div><div style="font-weight:600;">全国包邮<\/div><div style="color:#999;font-size:8px;">品牌仓直发<\/div><\/div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🔧<\/div><div style="font-weight:600;">免费安装<\/div><div style="color:#999;font-size:8px;">专业师傅上门<\/div><\/div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🛡<\/div><div style="font-weight:600;">官方质保<\/div><div style="color:#999;font-size:8px;">全国联保<\/div><\/div>
+          <\/div>
           <div style="display:table-row;">
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">⚡</div><div style="font-weight:600;">极速响应</div><div style="color:#999;font-size:8px;">售后24h内处理</div></div>
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🔄</div><div style="font-weight:600;">无忧退换</div><div style="color:#999;font-size:8px;">平台交易有保障</div></div>
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">📦</div><div style="font-weight:600;">专业包装</div><div style="color:#999;font-size:8px;">防潮防撞</div></div>
-            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">👤</div><div style="font-weight:600;">专属管家</div><div style="color:#999;font-size:8px;">一对一售后</div></div>
-          </div>
-        </div>
-      </div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">⚡<\/div><div style="font-weight:600;">极速响应<\/div><div style="color:#999;font-size:8px;">售后24h内处理<\/div><\/div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">🔄<\/div><div style="font-weight:600;">无忧退换<\/div><div style="color:#999;font-size:8px;">平台交易有保障<\/div><\/div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">📦<\/div><div style="font-weight:600;">专业包装<\/div><div style="color:#999;font-size:8px;">防潮防撞<\/div><\/div>
+            <div style="display:table-cell;padding:4px 2px;"><div style="font-size:14px;">👤<\/div><div style="font-weight:600;">专属管家<\/div><div style="color:#999;font-size:8px;">一对一售后<\/div><\/div>
+          <\/div>
+        <\/div>
+      <\/div>
 
-      <!-- Footer -->
+      <\!-- Footer -->
       <div style="text-align:center;font-size:11px;color:#999;border-top:1px solid #eee;padding-top:12px;">
         品牌床垫终极折扣 · 正品保障 · 全国发货<br>
         联系电话：19025413610 | 闲鱼搜索"品牌床垫终极折扣"
-      </div>
-    </div>
+      <\/div>
+    <\/div>
   `;
 }
 
@@ -3913,35 +3913,35 @@ function renderRecCard(p, i, rank) {
   const matchPct = Math.min(98, Math.max(62, Math.round(62 + safeScore / 2)));
   const rankClass = ['rank1','rank2','rank3'][i] || '';
   const firmDots = Array.from({length:10},(_,j)=>
-    '<span class="firm-dot '+(j<p.firmness?'fill':'empty')+'"></span>').join('');
+    '<span class="firm-dot '+(j<p.firmness?'fill':'empty')+'"><\/span>').join('');
   const reasons = (p.reasons||[]).filter(r=>r).slice(0,5);
   return '<div class="rec-card '+rankClass+'">' +
     '<div class="rec-card-header">' +
-      '<div class="rec-rank-block"><div class="rec-rank-num">'+rank+'</div></div>' +
+      '<div class="rec-rank-block"><div class="rec-rank-num">'+rank+'<\/div><\/div>' +
       '<div class="rec-card-info">' +
-        '<div class="rec-brand-tag">'+p.brand+'</div>' +
-        '<div class="rec-prod-name">'+p.name+'</div>' +
-        '<div class="rec-prod-en">'+(p.en||'')+'</div>' +
-      '</div>' +
+        '<div class="rec-brand-tag">'+p.brand+'<\/div>' +
+        '<div class="rec-prod-name">'+p.name+'<\/div>' +
+        '<div class="rec-prod-en">'+(p.en||'')+'<\/div>' +
+      '<\/div>' +
       '<div class="rec-match-badge">' +
-        '<span class="match-pct">'+matchPct+'%</span>' +
-        '<span class="match-label">匹配度</span>' +
-      '</div>' +
-    '</div>' +
+        '<span class="match-pct">'+matchPct+'%<\/span>' +
+        '<span class="match-label">匹配度<\/span>' +
+      '<\/div>' +
+    '<\/div>' +
     '<div class="rec-meta-row">' +
       '<div class="rec-firmness-bar">' +
-        '<span style="font-size:10px;color:var(--sand);letter-spacing:1px;white-space:nowrap">软硬度</span>' +
-        '<div class="firm-dots">'+firmDots+'</div>' +
-        '<span style="font-size:10px;color:var(--driftwood)">'+p.firmness+'/10</span>' +
-      '</div>' +
-    '</div>' +
-    (reasons.length ? '<div class="rec-card-body" style="grid-template-columns:1fr"><div class="rec-desc" style="border-right:none"><strong style="color:var(--gold-deep);font-size:11px;letter-spacing:1px;">匹配原因：</strong><br>'+reasons.map(function(r){return '• '+r}).join('<br>')+'</div></div>' : '') +
+        '<span style="font-size:10px;color:var(--sand);letter-spacing:1px;white-space:nowrap">软硬度<\/span>' +
+        '<div class="firm-dots">'+firmDots+'<\/div>' +
+        '<span style="font-size:10px;color:var(--driftwood)">'+p.firmness+'/10<\/span>' +
+      '<\/div>' +
+    '<\/div>' +
+    (reasons.length ? '<div class="rec-card-body" style="grid-template-columns:1fr"><div class="rec-desc" style="border-right:none"><strong style="color:var(--gold-deep);font-size:11px;letter-spacing:1px;">匹配原因：<\/strong><br>'+reasons.map(function(r){return '• '+r}).join('<br>')+'<\/div><\/div>' : '') +
     '<div class="rec-tags">' +
-      p.tags.map(function(t){return '<span class="rec-tag">'+t+'</span>'}).join('') +
-      (p.cooling?'<span class="rec-tag">散热设计</span>':'') +
-      (p.hypoallergenic?'<span class="rec-tag">防螨抗菌</span>':'') +
-    '</div>' +
-  '</div>';
+      p.tags.map(function(t){return '<span class="rec-tag">'+t+'<\/span>'}).join('') +
+      (p.cooling?'<span class="rec-tag">散热设计<\/span>':'') +
+      (p.hypoallergenic?'<span class="rec-tag">防螨抗菌<\/span>':'') +
+    '<\/div>' +
+  '<\/div>';
 }
 
 function getBadgePalette(label, fallbackTier) {
@@ -4011,23 +4011,23 @@ function getProductTierGlobal(p, displayPrice) {
 
 function renderManualPickPanel() {
   const current = D.manualPickName || '';
-  const opts = PRODUCTS.map(p => `<option value="${p.name}">${p.name}（${p.brand}）</option>`).join('');
+  const opts = PRODUCTS.map(p => `<option value="${p.name}">${p.name}（${p.brand}）<\/option>`).join('');
   return `
     <div class="manual-pick-panel" style="margin:14px 0 8px;padding:14px 16px;border:1px dashed var(--rule-strong);border-radius:10px;background:rgba(255,255,255,0.72);">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
         <div>
-          <div style="font-size:12px;font-weight:700;color:var(--espresso);">顾问手动加选位</div>
-          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">输入型号关键词即可搜索并加入候选池；系统后台保留 3 主推 + 2 备选，你可把加选款拖入前三进行替换，最终导出仍只显示 3 款。</div>
-        </div>
+          <div style="font-size:12px;font-weight:700;color:var(--espresso);">顾问手动加选位<\/div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">输入型号关键词即可搜索并加入候选池；系统后台保留 3 主推 + 2 备选，你可把加选款拖入前三进行替换，最终导出仍只显示 3 款。<\/div>
+        <\/div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;">
           <input list="manualPickOptions" id="manualPickSearch" value="${current}" placeholder="输入型号搜索，如：阳阳 / 亚当斯 / 曼哈顿" onkeydown="if(event.key==='Enter'){event.preventDefault();applyManualPickSearch();}" style="height:34px;min-width:280px;padding:0 10px;border:1px solid var(--rule-strong);border-radius:8px;background:#fff;color:var(--espresso);font-size:12px;">
-          <datalist id="manualPickOptions">${opts}</datalist>
-          <button onclick="applyManualPickSearch()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:var(--gold);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">加入候选池</button>
-          ${current ? '<button onclick="setManualPick(\'\')" style="height:34px;padding:0 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--cream);color:var(--driftwood);cursor:pointer;font-size:12px;">清除加选</button>' : ''}
-        </div>
-      </div>
-      ${current ? `<div style="margin-top:8px;font-size:11px;color:var(--gold-deep);font-weight:600;">当前加选：✨ ${current}</div>` : ''}
-    </div>`;
+          <datalist id="manualPickOptions">${opts}<\/datalist>
+          <button onclick="applyManualPickSearch()" style="height:34px;padding:0 12px;border:none;border-radius:8px;background:var(--gold);color:#fff;cursor:pointer;font-size:12px;font-weight:700;">加入候选池<\/button>
+          ${current ? '<button onclick="setManualPick(\'\')" style="height:34px;padding:0 12px;border:1px solid var(--rule-strong);border-radius:8px;background:var(--cream);color:var(--driftwood);cursor:pointer;font-size:12px;">清除加选<\/button>' : ''}
+        <\/div>
+      <\/div>
+      ${current ? `<div style="margin-top:8px;font-size:11px;color:var(--gold-deep);font-weight:600;">当前加选：✨ ${current}<\/div>` : ''}
+    <\/div>`;
 }
 
 function renderCandidatePool() {
@@ -4037,15 +4037,15 @@ function renderCandidatePool() {
     <div class="candidate-pool-panel" style="margin:14px 0 8px;padding:16px;border:1px solid var(--rule-strong);border-radius:12px;background:rgba(255,255,255,0.76);box-shadow:var(--shadow-sm);">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
         <div>
-          <div style="font-size:12px;font-weight:700;color:var(--espresso);">候选替换池</div>
-          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">这里保留系统自动算出的 2 个备选，以及你手动加入的加选款。可直接拖到上方前三卡片，或点按钮替换到第 1 / 2 / 3 位。最终生成客户图片时，只出前三款。</div>
-        </div>
-        <div style="font-size:11px;color:var(--gold-deep);font-weight:600;">当前导出：仅前三款</div>
-      </div>
+          <div style="font-size:12px;font-weight:700;color:var(--espresso);">候选替换池<\/div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:4px;line-height:1.7;">这里保留系统自动算出的 2 个备选，以及你手动加入的加选款。可直接拖到上方前三卡片，或点按钮替换到第 1 / 2 / 3 位。最终生成客户图片时，只出前三款。<\/div>
+        <\/div>
+        <div style="font-size:11px;color:var(--gold-deep);font-weight:600;">当前导出：仅前三款<\/div>
+      <\/div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;">
         ${pool.map((p, idx) => renderCandidatePoolCard(p, idx + 3)).join('')}
-      </div>
-    </div>`;
+      <\/div>
+    <\/div>`;
 }
 
 function renderCandidatePoolCard(p, globalIdx) {
@@ -4055,21 +4055,21 @@ function renderCandidatePoolCard(p, globalIdx) {
     <div draggable="true" ondragstart="startCandidateDrag(${globalIdx})" ondragend="clearCandidateDrag()" style="border:1px dashed var(--rule-strong);border-radius:10px;padding:12px;background:#fff;box-shadow:var(--shadow-sm);">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <div style="min-width:0;">
-          <div style="font-size:10px;color:var(--sand);">${p.brand}</div>
-          <div style="font-size:14px;font-weight:700;color:var(--espresso);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-        </div>
-        <span style="display:inline-block;background:${p.__manual?'#fdf5e4':'#f4efe5'};color:${p.__manual?'#8B6914':'#7a6a52'};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">${tag}</span>
-      </div>
+          <div style="font-size:10px;color:var(--sand);">${p.brand}<\/div>
+          <div style="font-size:14px;font-weight:700;color:var(--espresso);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}<\/div>
+        <\/div>
+        <span style="display:inline-block;background:${p.__manual?'#fdf5e4':'#f4efe5'};color:${p.__manual?'#8B6914':'#7a6a52'};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">${tag}<\/span>
+      <\/div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;flex-wrap:wrap;">
-        <div style="font-size:11px;color:var(--driftwood);">¥${displayPrice.toLocaleString()} · 软硬 ${p.firmness}/10</div>
-        <div style="font-size:11px;color:var(--sand);">拖到前三可替换</div>
-      </div>
+        <div style="font-size:11px;color:var(--driftwood);">¥${displayPrice.toLocaleString()} · 软硬 ${p.firmness}/10<\/div>
+        <div style="font-size:11px;color:var(--sand);">拖到前三可替换<\/div>
+      <\/div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px;">
-        <button onclick="promoteCandidate(${globalIdx},0)" style="height:30px;border:none;border-radius:6px;background:var(--gold);color:#fff;cursor:pointer;font-size:11px;font-weight:700;">替换第1位</button>
-        <button onclick="promoteCandidate(${globalIdx},1)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第2位</button>
-        <button onclick="promoteCandidate(${globalIdx},2)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第3位</button>
-      </div>
-    </div>`;
+        <button onclick="promoteCandidate(${globalIdx},0)" style="height:30px;border:none;border-radius:6px;background:var(--gold);color:#fff;cursor:pointer;font-size:11px;font-weight:700;">替换第1位<\/button>
+        <button onclick="promoteCandidate(${globalIdx},1)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第2位<\/button>
+        <button onclick="promoteCandidate(${globalIdx},2)" style="height:30px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--cream);color:var(--espresso);cursor:pointer;font-size:11px;">替换第3位<\/button>
+      <\/div>
+    <\/div>`;
 }
 
 function pickCard(key, val, el) {
@@ -4111,7 +4111,7 @@ function rerenderCards() {
   if (poolWrap) poolWrap.innerHTML = renderCandidatePool();
   const sp = document.querySelector('.sales-panel-text');
   if (sp && finalProducts[0]) {
-    sp.innerHTML = '<strong>首推「' + finalProducts[0].name + '」：</strong>' + finalProducts[0].sales_tip;
+    sp.innerHTML = '<strong>首推「' + finalProducts[0].name + '」：<\/strong>' + finalProducts[0].sales_tip;
   }
 }
 
@@ -4214,27 +4214,27 @@ function renderRecordsList() {
   const el = document.getElementById('recordsList');
   updateRecordsBadge();
   if (!records.length) {
-    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--driftwood);font-size:12px;">暂无保存的客户记录</div>';
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--driftwood);font-size:12px;">暂无保存的客户记录<\/div>';
     return;
   }
   el.innerHTML = records.map(r => `
     <div style="padding:10px 12px;border:1px solid var(--rule);border-radius:8px;margin-bottom:8px;background:#fff;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:14px;font-weight:600;color:var(--espresso);word-break:break-all;">${r.name}</div>
-          <div style="font-size:11px;color:var(--driftwood);margin-top:2px;">${r.date}</div>
-          <div style="font-size:11px;color:var(--bark);margin-top:4px;">${r.summary || ''}</div>
-          <div style="font-size:10px;color:${r.reportSnapshot && r.reportSnapshot.reportHtml ? 'var(--sage)' : 'var(--sand)'};margin-top:6px;">${r.reportSnapshot && r.reportSnapshot.reportHtml ? '已保存报告快照，可直接查看历史报告' : '当前仅保存了客户数据，还没有历史报告快照'}</div>
-        </div>
+          <div style="font-size:14px;font-weight:600;color:var(--espresso);word-break:break-all;">${r.name}<\/div>
+          <div style="font-size:11px;color:var(--driftwood);margin-top:2px;">${r.date}<\/div>
+          <div style="font-size:11px;color:var(--bark);margin-top:4px;">${r.summary || ''}<\/div>
+          <div style="font-size:10px;color:${r.reportSnapshot && r.reportSnapshot.reportHtml ? 'var(--sage)' : 'var(--sand)'};margin-top:6px;">${r.reportSnapshot && r.reportSnapshot.reportHtml ? '已保存报告快照，可直接查看历史报告' : '当前仅保存了客户数据，还没有历史报告快照'}<\/div>
+        <\/div>
         <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:230px;">
-          <button onclick="loadCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:var(--gold);color:#fff;border:none;border-radius:4px;cursor:pointer;">加载</button>
-          ${r.reportSnapshot && r.reportSnapshot.reportHtml ? `<button onclick="openReportPreview(${r.id})" style="padding:4px 10px;font-size:11px;background:#2a6b3a;color:#fff;border:none;border-radius:4px;cursor:pointer;">看报告</button>` : ''}
+          <button onclick="loadCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:var(--gold);color:#fff;border:none;border-radius:4px;cursor:pointer;">加载<\/button>
+          ${r.reportSnapshot && r.reportSnapshot.reportHtml ? `<button onclick="openReportPreview(${r.id})" style="padding:4px 10px;font-size:11px;background:#2a6b3a;color:#fff;border:none;border-radius:4px;cursor:pointer;">看报告<\/button>` : ''}
           
-          <button onclick="downloadSingleRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:#fff;color:var(--gold-deep);border:1px solid var(--rule-strong);border-radius:4px;cursor:pointer;">导出记录</button>
-          <button onclick="deleteCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:transparent;color:#c88;border:1px solid #daa;border-radius:4px;cursor:pointer;">删除</button>
-        </div>
-      </div>
-    </div>
+          <button onclick="downloadSingleRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:#fff;color:var(--gold-deep);border:1px solid var(--rule-strong);border-radius:4px;cursor:pointer;">导出记录<\/button>
+          <button onclick="deleteCustomerRecord(${r.id})" style="padding:4px 10px;font-size:11px;background:transparent;color:#c88;border:1px solid #daa;border-radius:4px;cursor:pointer;">删除<\/button>
+        <\/div>
+      <\/div>
+    <\/div>
   `).join('');
 }
 
@@ -4358,33 +4358,33 @@ function pushToAdvisor(scored) {
       return (i+1)+'. '+p.name+' ('+p.brand+') — 匹配分:'+p.score + (p.reasons&&p.reasons.length?' — '+p.reasons.join('、'):'');
     }).join('\n');
     
-    var content = '<h2>🛏️ 新客户睡眠评测完成</h2>' +
+    var content = '<h2>🛏️ 新客户睡眠评测完成<\/h2>' +
       '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:14px;width:100%">' +
-      '<tr><td><b>客户</b></td><td>'+(D.clientName||'未填写')+'</td></tr>' +
-      '<tr><td><b>📱手机号</b></td><td style="font-size:16px;font-weight:700;color:#c00">'+(D.phone||'未填写')+'</td></tr>' +
-      '<tr><td><b>城市</b></td><td>'+(D.city||'—')+'</td></tr>' +
-      '<tr><td><b>年龄/性别</b></td><td>'+(D.age||'—')+' / '+(D.gender||'—')+'</td></tr>' +
-      '<tr><td><b>身高/体重</b></td><td>'+(D.height||'—')+'cm / '+(D.weight||'—')+'kg'+(D.bmi?' (BMI:'+D.bmi+')':'')+'</td></tr>' +
-      '<tr><td><b>来源渠道</b></td><td>'+(D.source||'—')+'</td></tr>' +
-      '<tr><td><b>双人使用</b></td><td>'+(D.couple?'是':'否')+'</td></tr>' +
-      '<tr><td><b>使用场景</b></td><td>'+(D.usage||'—')+'</td></tr>' +
-      '<tr><td><b>尺寸</b></td><td>'+(D.size||'—')+'</td></tr>' +
-      '<tr><td><b>床架类型</b></td><td>'+(D.bedType||'—')+'</td></tr>' +
-      '<tr><td><b>当前床垫</b></td><td>'+(D.curMat||'—')+' ('+(D.matAge||'—')+')</td></tr>' +
-      '<tr><td><b>当前感受</b></td><td>'+(D.curFeel||'—')+'</td></tr>' +
-      '<tr><td><b>睡眠困扰</b></td><td>'+arrJ(D.concerns)+'</td></tr>' +
-      '<tr><td><b>主睡姿</b></td><td>'+(D.sleepMain||'—')+'</td></tr>' +
-      '<tr><td><b>健康问题</b></td><td>'+arrJ(D.healthIssues)+'</td></tr>' +
-      '<tr><td><b>肩/臀/腰</b></td><td>'+(D.shoulderPressure||'—')+' / '+(D.hipPressure||'—')+' / '+(D.waistGap||'—')+'</td></tr>' +
-      '<tr><td><b>软硬偏好</b></td><td>'+(D.firmPref||'—')+'</td></tr>' +
-      '<tr><td><b>睡感需求</b></td><td>'+arrJ(D.feelPrefs)+'</td></tr>' +
-      '<tr><td><b>怕热/敏感</b></td><td>'+(D.climate||'—')+' / '+(D.sleepSensitive||'—')+'</td></tr>' +
-      '<tr><td><b>预算</b></td><td>'+(D.budgetMin||'—')+' ~ '+(D.budgetMax||'—')+' ('+(D.budgetFlex||'—')+')</td></tr>' +
-      '<tr><td><b>品牌偏好</b></td><td>'+(D.brandFocus||arrJ(D.brandPref)||'不限')+'</td></tr>' +
-      '<tr><td><b>样品接受</b></td><td>'+(D.sampleAccept||'—')+'</td></tr>' +
-      '</table>' +
-      '<h3>📋 系统推荐 Top3</h3><pre style="font-size:13px;line-height:1.8">'+(topProducts||'暂无匹配')+'</pre>' +
-      '<p style="color:#999;font-size:12px">提交时间：'+new Date().toLocaleString('zh-CN')+'</p>';
+      '<tr><td><b>客户<\/b><\/td><td>'+(D.clientName||'未填写')+'<\/td><\/tr>' +
+      '<tr><td><b>📱手机号<\/b><\/td><td style="font-size:16px;font-weight:700;color:#c00">'+(D.phone||'未填写')+'<\/td><\/tr>' +
+      '<tr><td><b>城市<\/b><\/td><td>'+(D.city||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>年龄/性别<\/b><\/td><td>'+(D.age||'—')+' / '+(D.gender||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>身高/体重<\/b><\/td><td>'+(D.height||'—')+'cm / '+(D.weight||'—')+'kg'+(D.bmi?' (BMI:'+D.bmi+')':'')+'<\/td><\/tr>' +
+      '<tr><td><b>来源渠道<\/b><\/td><td>'+(D.source||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>双人使用<\/b><\/td><td>'+(D.couple?'是':'否')+'<\/td><\/tr>' +
+      '<tr><td><b>使用场景<\/b><\/td><td>'+(D.usage||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>尺寸<\/b><\/td><td>'+(D.size||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>床架类型<\/b><\/td><td>'+(D.bedType||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>当前床垫<\/b><\/td><td>'+(D.curMat||'—')+' ('+(D.matAge||'—')+')<\/td><\/tr>' +
+      '<tr><td><b>当前感受<\/b><\/td><td>'+(D.curFeel||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>睡眠困扰<\/b><\/td><td>'+arrJ(D.concerns)+'<\/td><\/tr>' +
+      '<tr><td><b>主睡姿<\/b><\/td><td>'+(D.sleepMain||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>健康问题<\/b><\/td><td>'+arrJ(D.healthIssues)+'<\/td><\/tr>' +
+      '<tr><td><b>肩/臀/腰<\/b><\/td><td>'+(D.shoulderPressure||'—')+' / '+(D.hipPressure||'—')+' / '+(D.waistGap||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>软硬偏好<\/b><\/td><td>'+(D.firmPref||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>睡感需求<\/b><\/td><td>'+arrJ(D.feelPrefs)+'<\/td><\/tr>' +
+      '<tr><td><b>怕热/敏感<\/b><\/td><td>'+(D.climate||'—')+' / '+(D.sleepSensitive||'—')+'<\/td><\/tr>' +
+      '<tr><td><b>预算<\/b><\/td><td>'+(D.budgetMin||'—')+' ~ '+(D.budgetMax||'—')+' ('+(D.budgetFlex||'—')+')<\/td><\/tr>' +
+      '<tr><td><b>品牌偏好<\/b><\/td><td>'+(D.brandFocus||arrJ(D.brandPref)||'不限')+'<\/td><\/tr>' +
+      '<tr><td><b>样品接受<\/b><\/td><td>'+(D.sampleAccept||'—')+'<\/td><\/tr>' +
+      '<\/table>' +
+      '<h3>📋 系统推荐 Top3<\/h3><pre style="font-size:13px;line-height:1.8">'+(topProducts||'暂无匹配')+'<\/pre>' +
+      '<p style="color:#999;font-size:12px">提交时间：'+new Date().toLocaleString('zh-CN')+'<\/p>';
     
     var title = '新客户评测｜'+(D.clientName||'匿名')+' — '+(D.phone||'')+' — '+(D.city||'')+' — 预算'+(D.budgetMin||'?')+'~'+(D.budgetMax||'?');
     
@@ -4480,21 +4480,21 @@ function buildResult(skipNav) {
 
   el.innerHTML = `
     <div class="report-header">
-      <div class="report-overline">Personalized Sleep Consultation Report</div>
-      <div class="report-title">专属睡眠顾问推荐报告</div>
-      <div class="report-meta">评测日期：${dateStr} &nbsp;·&nbsp; 睡姿：${D.sleep||'—'} &nbsp;·&nbsp; 体型：${D.body||'—'} &nbsp;·&nbsp; BMI：${D.bmi||'—'}（${bmiCat}）</div>
-    </div>
+      <div class="report-overline">Personalized Sleep Consultation Report<\/div>
+      <div class="report-title">专属睡眠顾问推荐报告<\/div>
+      <div class="report-meta">评测日期：${dateStr} &nbsp;·&nbsp; 睡姿：${D.sleep||'—'} &nbsp;·&nbsp; 体型：${D.body||'—'} &nbsp;·&nbsp; BMI：${D.bmi||'—'}（${bmiCat}）<\/div>
+    <\/div>
     <div class="analysis-brief">
-      综合分析：体型 <strong>「${D.body||'—'}」</strong>、睡姿 <strong>「${D.sleep||'—'}」</strong>、BMI ${D.bmi||'—'}（${bmiCat}），
-      当前床垫感受 <span class="highlight">「${D.curFeel||'—'}」</span> 提示需要<strong>${inferFirm()}</strong>。
-      ${D.concerns.length && !D.concerns.includes('none') ? `您反映的痛点「<strong>${labelList(D.concerns,3)}</strong>${D.concerns.length>3?'等':''}」已重点纳入权重算法。` : '无特殊睡眠困扰，以综合舒适度和支撑性为主要推荐依据。'}
-      ${[D.turning, D.nightRise, D.getUp].some(Boolean) ? ` 行动便利评估为「<strong>${[D.turning, D.nightRise, D.getUp].filter(Boolean).join(' / ')}</strong>」，边缘支撑、翻身利落度与夜间起身便利已单独加权。` : ''}
-      ${D.pressure && D.pressure !== '无明显压迫' ? ` 肩胯压迫情况为「<strong>${D.pressure}</strong>」，已纳入释压与贴合维度。` : ''}
+      综合分析：体型 <strong>「${D.body||'—'}」<\/strong>、睡姿 <strong>「${D.sleep||'—'}」<\/strong>、BMI ${D.bmi||'—'}（${bmiCat}），
+      当前床垫感受 <span class="highlight">「${D.curFeel||'—'}」<\/span> 提示需要<strong>${inferFirm()}<\/strong>。
+      ${D.concerns.length && !D.concerns.includes('none') ? `您反映的痛点「<strong>${labelList(D.concerns,3)}<\/strong>${D.concerns.length>3?'等':''}」已重点纳入权重算法。` : '无特殊睡眠困扰，以综合舒适度和支撑性为主要推荐依据。'}
+      ${[D.turning, D.nightRise, D.getUp].some(Boolean) ? ` 行动便利评估为「<strong>${[D.turning, D.nightRise, D.getUp].filter(Boolean).join(' / ')}<\/strong>」，边缘支撑、翻身利落度与夜间起身便利已单独加权。` : ''}
+      ${D.pressure && D.pressure !== '无明显压迫' ? ` 肩胯压迫情况为「<strong>${D.pressure}<\/strong>」，已纳入释压与贴合维度。` : ''}
       ${D.couple ? ' 双人共用场景下，隔振防干扰性已额外加权。' : ''}
-    </div>
+    <\/div>
     <div class="rec-list">
-      ${getFinalProducts().length ? getFinalProducts().map((p,i)=>renderRecCard(p,i,rankLabel[i])).join('') : '<div style="padding:32px;text-align:center;color:var(--driftwood)">暂无符合当前预算的产品，建议补充品牌数据或放宽预算范围</div>'}
-    </div>
+      ${getFinalProducts().length ? getFinalProducts().map((p,i)=>renderRecCard(p,i,rankLabel[i])).join('') : '<div style="padding:32px;text-align:center;color:var(--driftwood)">暂无符合当前预算的产品，建议补充品牌数据或放宽预算范围<\/div>'}
+    <\/div>
     
     
     
@@ -4506,7 +4506,7 @@ function buildResult(skipNav) {
   } catch(err) {
     console.error('buildResult error:', err);
     var el2 = document.getElementById('resultReport');
-    if (el2) el2.innerHTML = '<div style="padding:24px;color:red"><strong>报告生成出错：</strong><br>' + String(err.message||err) + '</div>';
+    if (el2) el2.innerHTML = '<div style="padding:24px;color:red"><strong>报告生成出错：<\/strong><br>' + String(err.message||err) + '<\/div>';
     if (!skipNav) go(14);
   }
 }
@@ -4750,9 +4750,9 @@ const QK_EXAMPLES = [
 function initQKExamples() {
   const c = document.getElementById('qkExamples');
   if(!c) return;
-  c.innerHTML = QK_EXAMPLES.map(e => '<span class="ex-tag" onclick="setQKInput(\''+e.replace(/'/g,"\\'")+'\')">' + e.slice(0,16) + (e.length>16?'...':'') + '</span>').join('');
+  c.innerHTML = QK_EXAMPLES.map(e => '<span class="ex-tag" onclick="setQKInput(\''+e.replace(/'/g,"\\'")+'\')">' + e.slice(0,16) + (e.length>16?'...':'') + '<\/span>').join('');
   const cc = document.getElementById('chatExamples');
-  if(cc) cc.innerHTML = QK_EXAMPLES.slice(0,4).map(e => '<span class="ex-tag" onclick="setChatQ(\''+e.replace(/'/g,"\\'")+'\')">' + e.slice(0,14) + '...' + '</span>').join('');
+  if(cc) cc.innerHTML = QK_EXAMPLES.slice(0,4).map(e => '<span class="ex-tag" onclick="setChatQ(\''+e.replace(/'/g,"\\'")+'\')">' + e.slice(0,14) + '...' + '<\/span>').join('');
 }
 function setQKInput(t) { document.getElementById('quickInput').value = t; doQuickSearch(); }
 function setChatQ(t) { document.getElementById('chatInput').value = t; doChat(); }
@@ -4786,14 +4786,14 @@ function showQKParsed(req) {
   if (req.brands && req.brands.length>0) req.brands.forEach(b => tags.push(['品牌:'+b,'badge-g']));
   if (tags.length===0) { box.style.display='none'; return; }
   box.style.display='block';
-  box.innerHTML = '<div class="parsed-t">需求解析</div>' + tags.map(t => '<span class="badge-qk '+t[1]+'">'+t[0]+'</span>').join('');
+  box.innerHTML = '<div class="parsed-t">需求解析<\/div>' + tags.map(t => '<span class="badge-qk '+t[1]+'">'+t[0]+'<\/span>').join('');
 }
 
 function showQKSizeBar() {
   const sizes = ['120*200','135*200','150*200','180*200','200*200'];
   const bar = document.getElementById('qkSizeBar');
   bar.style.display='flex';
-  bar.innerHTML = sizes.map(s => '<span class="qk-size-btn'+(s===currentQKSize?' on':'')+'" onclick="changeQKSize(\''+s+'\')">'+s.replace('*','×')+'</span>').join('');
+  bar.innerHTML = sizes.map(s => '<span class="qk-size-btn'+(s===currentQKSize?' on':'')+'" onclick="changeQKSize(\''+s+'\')">'+s.replace('*','×')+'<\/span>').join('');
 }
 
 function changeQKSize(s) {
@@ -4804,25 +4804,25 @@ function changeQKSize(s) {
 
 function showQKResults(results) {
   const c = document.getElementById('quickResults');
-  if (!results.length) { c.innerHTML = '<div style="text-align:center;padding:30px;color:var(--driftwood)">没有匹配结果，请调整描述</div>'; return; }
-  c.innerHTML = '<div class="res-info">找到 <b>'+results.length+'</b> 款匹配产品（'+currentQKSize.replace('*','×')+'）</div>' +
+  if (!results.length) { c.innerHTML = '<div style="text-align:center;padding:30px;color:var(--driftwood)">没有匹配结果，请调整描述<\/div>'; return; }
+  c.innerHTML = '<div class="res-info">找到 <b>'+results.length+'<\/b> 款匹配产品（'+currentQKSize.replace('*','×')+'）<\/div>' +
     results.map((r,i) => {
       const cls = i===0?'r1':i===1?'r2':'r3';
       const pr = getQKPrice(r.prod.model, currentQKSize);
       const xy = pr ? '¥'+pr[2].toLocaleString() : '—';
       const bars = [['软硬',r.m.firmScore],['贴合',r.m.fitScore],['透气',r.m.breathScore],['抗扰',r.m.antiDisturbScore],['护脊',r.m.spineScore],['耐久',r.m.durScore]];
       return '<div class="qk-card '+cls+'" onclick="this.classList.toggle(\'open\')">' +
-        '<div class="qk-card-hd"><div class="qk-rank">'+(i+1)+'</div><div style="flex:1"><div class="qk-card-name">'+r.prod.model+'</div><div class="qk-card-desc">'+r.prod.brand+' · '+r.prod.series+' · '+r.prod.firmness+(r.prod.height?' · '+r.prod.height+'cm':'')+'</div>' +
-        (r.reasons.length?'<div style="margin-top:4px">'+r.reasons.map(x=>'<span class="badge-qk badge-g">'+x+'</span>').join('')+'</div>':'') +
-        (r.penalties.length?'<div>'+r.penalties.map(x=>'<span class="badge-qk badge-w">'+x+'</span>').join('')+'</div>':'') +
-        '</div><div class="qk-card-price"><div class="qk-card-price-v">'+xy+'</div><div class="qk-card-price-l">闲鱼价</div></div><div class="qk-card-score"><div class="qk-card-score-v">'+r.score+'</div><div style="font-size:10px;color:var(--driftwood)">匹配分</div></div></div>' +
-        '<div class="qk-card-bars">'+bars.map(b=>'<div class="qk-bar-row"><div class="qk-bar-hd"><span>'+b[0]+'</span><b>'+b[1]+'/5</b></div><div class="qk-bar-bg"><div class="qk-bar-fill" style="width:'+(b[1]*20)+'%;background:var(--gold)"></div></div></div>').join('')+'</div>' +
+        '<div class="qk-card-hd"><div class="qk-rank">'+(i+1)+'<\/div><div style="flex:1"><div class="qk-card-name">'+r.prod.model+'<\/div><div class="qk-card-desc">'+r.prod.brand+' · '+r.prod.series+' · '+r.prod.firmness+(r.prod.height?' · '+r.prod.height+'cm':'')+'<\/div>' +
+        (r.reasons.length?'<div style="margin-top:4px">'+r.reasons.map(x=>'<span class="badge-qk badge-g">'+x+'<\/span>').join('')+'<\/div>':'') +
+        (r.penalties.length?'<div>'+r.penalties.map(x=>'<span class="badge-qk badge-w">'+x+'<\/span>').join('')+'<\/div>':'') +
+        '<\/div><div class="qk-card-price"><div class="qk-card-price-v">'+xy+'<\/div><div class="qk-card-price-l">闲鱼价<\/div><\/div><div class="qk-card-score"><div class="qk-card-score-v">'+r.score+'<\/div><div style="font-size:10px;color:var(--driftwood)">匹配分<\/div><\/div><\/div>' +
+        '<div class="qk-card-bars">'+bars.map(b=>'<div class="qk-bar-row"><div class="qk-bar-hd"><span>'+b[0]+'<\/span><b>'+b[1]+'/5<\/b><\/div><div class="qk-bar-bg"><div class="qk-bar-fill" style="width:'+(b[1]*20)+'%;background:var(--gold)"><\/div><\/div><\/div>').join('')+'<\/div>' +
         '<div class="qk-card-detail">' +
-        '<div style="font-size:11px;color:var(--driftwood);margin-bottom:8px;line-height:1.6"><b>弹簧：</b>'+r.prod.spring+'<br><b>面料：</b>'+r.prod.fabric+'<br><b>绗缝：</b>'+(r.prod.quilt||'—')+'<br><b>填充：</b>'+(r.prod.filling||'—')+'<br><b>边缘：</b>'+(r.prod.edge||'—')+'<br><b>结构：</b>'+(r.prod.structure||'—')+'<br><b>智能：</b>'+(r.prod.smart||'—')+'</div>' +
-        (r.scripts.length?'<div class="qk-detail-box scripts"><div class="qk-detail-box-t">💬 话术推荐</div>'+r.scripts.map(s=>'<div class="qk-detail-line"><span class="kw">['+s.keyword.slice(0,12)+']</span> '+s.script+'</div>').join('')+'</div>':'') +
-        (r.objs.length?'<div class="qk-detail-box objections"><div class="qk-detail-box-t">🛡️ 异议应对</div>'+r.objs.map(o=>'<div class="qk-detail-line"><span class="kw">Q: '+o.question+'</span> → '+o.answer+'</div>').join('')+'</div>':'') +
-        '<div style="font-size:10px;color:var(--driftwood);line-height:1.5">适合: '+r.m.tags.split('|').join(' · ')+'</div>' +
-        '</div></div>';
+        '<div style="font-size:11px;color:var(--driftwood);margin-bottom:8px;line-height:1.6"><b>弹簧：<\/b>'+r.prod.spring+'<br><b>面料：<\/b>'+r.prod.fabric+'<br><b>绗缝：<\/b>'+(r.prod.quilt||'—')+'<br><b>填充：<\/b>'+(r.prod.filling||'—')+'<br><b>边缘：<\/b>'+(r.prod.edge||'—')+'<br><b>结构：<\/b>'+(r.prod.structure||'—')+'<br><b>智能：<\/b>'+(r.prod.smart||'—')+'<\/div>' +
+        (r.scripts.length?'<div class="qk-detail-box scripts"><div class="qk-detail-box-t">💬 话术推荐<\/div>'+r.scripts.map(s=>'<div class="qk-detail-line"><span class="kw">['+s.keyword.slice(0,12)+']<\/span> '+s.script+'<\/div>').join('')+'<\/div>':'') +
+        (r.objs.length?'<div class="qk-detail-box objections"><div class="qk-detail-box-t">🛡️ 异议应对<\/div>'+r.objs.map(o=>'<div class="qk-detail-line"><span class="kw">Q: '+o.question+'<\/span> → '+o.answer+'<\/div>').join('')+'<\/div>':'') +
+        '<div style="font-size:10px;color:var(--driftwood);line-height:1.5">适合: '+r.m.tags.split('|').join(' · ')+'<\/div>' +
+        '<\/div><\/div>';
     }).join('');
 }
 
@@ -4862,7 +4862,7 @@ function addChatMsg(role, text) {
   const c = document.getElementById('chatMsgs');
   const d = document.createElement('div');
   d.className = 'msg ' + role;
-  d.innerHTML = '<div class="msg-bubble">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+  d.innerHTML = '<div class="msg-bubble">' + text.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '<\/div>';
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
 }
