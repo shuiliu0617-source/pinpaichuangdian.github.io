@@ -4509,6 +4509,62 @@ function printCurrentReportPdf() {
 // ═══ V2 Result Rendering Functions ═══
 
 
+// ═══ PushPlus 推送到顾问微信 ═══
+function pushToAdvisor(scored) {
+  try {
+    var arrJ = function(arr) { return (arr||[]).join('、') || '—'; };
+    var topProducts = (scored||[]).slice(0,3).map(function(p,i){
+      return (i+1)+'. '+p.name+' ('+p.brand+') — 匹配分:'+p.score + (p.reasons&&p.reasons.length?' — '+p.reasons.join('、'):'');
+    }).join('\n');
+    
+    var content = '<h2>🛏️ 新客户睡眠评测完成</h2>' +
+      '<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-size:14px;width:100%">' +
+      '<tr><td><b>客户</b></td><td>'+(D.clientName||'未填写')+'</td></tr>' +
+      '<tr><td><b>城市</b></td><td>'+(D.city||'—')+'</td></tr>' +
+      '<tr><td><b>年龄/性别</b></td><td>'+(D.age||'—')+' / '+(D.gender||'—')+'</td></tr>' +
+      '<tr><td><b>身高/体重</b></td><td>'+(D.height||'—')+'cm / '+(D.weight||'—')+'kg'+(D.bmi?' (BMI:'+D.bmi+')':'')+'</td></tr>' +
+      '<tr><td><b>来源渠道</b></td><td>'+(D.source||'—')+'</td></tr>' +
+      '<tr><td><b>双人使用</b></td><td>'+(D.couple?'是':'否')+'</td></tr>' +
+      '<tr><td><b>使用场景</b></td><td>'+(D.usage||'—')+'</td></tr>' +
+      '<tr><td><b>尺寸</b></td><td>'+(D.size||'—')+'</td></tr>' +
+      '<tr><td><b>床架类型</b></td><td>'+(D.bedType||'—')+'</td></tr>' +
+      '<tr><td><b>当前床垫</b></td><td>'+(D.curMat||'—')+' ('+(D.matAge||'—')+')</td></tr>' +
+      '<tr><td><b>当前感受</b></td><td>'+(D.curFeel||'—')+'</td></tr>' +
+      '<tr><td><b>睡眠困扰</b></td><td>'+arrJ(D.concerns)+'</td></tr>' +
+      '<tr><td><b>主睡姿</b></td><td>'+(D.sleepMain||'—')+'</td></tr>' +
+      '<tr><td><b>健康问题</b></td><td>'+arrJ(D.healthIssues)+'</td></tr>' +
+      '<tr><td><b>肩/臀/腰</b></td><td>'+(D.shoulderPressure||'—')+' / '+(D.hipPressure||'—')+' / '+(D.waistGap||'—')+'</td></tr>' +
+      '<tr><td><b>软硬偏好</b></td><td>'+(D.firmPref||'—')+'</td></tr>' +
+      '<tr><td><b>睡感需求</b></td><td>'+arrJ(D.feelPrefs)+'</td></tr>' +
+      '<tr><td><b>怕热/敏感</b></td><td>'+(D.climate||'—')+' / '+(D.sleepSensitive||'—')+'</td></tr>' +
+      '<tr><td><b>预算</b></td><td>'+(D.budgetMin||'—')+' ~ '+(D.budgetMax||'—')+' ('+(D.budgetFlex||'—')+')</td></tr>' +
+      '<tr><td><b>品牌偏好</b></td><td>'+(D.brandFocus||arrJ(D.brandPref)||'不限')+'</td></tr>' +
+      '<tr><td><b>样品接受</b></td><td>'+(D.sampleAccept||'—')+'</td></tr>' +
+      '</table>' +
+      '<h3>📋 系统推荐 Top3</h3><pre style="font-size:13px;line-height:1.8">'+(topProducts||'暂无匹配')+'</pre>' +
+      '<p style="color:#999;font-size:12px">提交时间：'+new Date().toLocaleString('zh-CN')+'</p>';
+    
+    var title = '新客户评测｜'+(D.clientName||'匿名')+' — '+(D.city||'')+' — 预算'+(D.budgetMin||'?')+'~'+(D.budgetMax||'?');
+    
+    fetch('https://www.pushplus.plus/send', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        token:'06a0cfcc2b534e3b99b977ca3fc2146f',
+        title:title,
+        content:content,
+        template:'html'
+      })
+    }).then(function(r){return r.json()}).then(function(d){
+      console.log('PushPlus:', d);
+    }).catch(function(e){
+      console.log('推送失败:', e);
+    });
+  } catch(e) {
+    console.log('推送异常:', e);
+  }
+}
+
 function buildResult(skipNav) {
   buildConfirm();
   try {
@@ -4577,6 +4633,8 @@ function buildResult(skipNav) {
   `;
 
   if (!skipNav) go(14);
+  // 首次生成结果时推送到顾问微信
+  if (!skipNav) pushToAdvisor(scored);
   } catch(err) {
     console.error('buildResult error:', err);
     var el2 = document.getElementById('resultReport');
