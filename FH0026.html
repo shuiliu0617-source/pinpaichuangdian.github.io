@@ -1,0 +1,3446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>长图智能分段工具</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Noto Serif CJK SC", sans-serif;
+    background: #0b1829;
+    color: #e8dfc4;
+    min-height: 100vh;
+    padding: 20px 16px;
+    line-height: 1.6;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+  .header {
+    text-align: center;
+    padding: 20px 16px 28px;
+    border-bottom: 1px solid rgba(200,160,60,0.2);
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    color: #ddb655;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: rgba(190,165,100,0.65);
+    font-size: 13px;
+  }
+  .section {
+    background: rgba(20,40,65,0.6);
+    border: 1px solid rgba(200,160,60,0.16);
+    border-radius: 14px;
+    padding: 18px 16px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    color: #ddb655;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: linear-gradient(180deg, #d4a840, #b08828);
+    border-radius: 2px;
+  }
+
+  .drop-zone {
+    border: 2px dashed rgba(200,160,60,0.35);
+    border-radius: 12px;
+    padding: 32px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: rgba(11,24,41,0.4);
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: #ddb655;
+    background: rgba(221,182,85,0.05);
+  }
+  .drop-zone-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+    color: #ddb655;
+  }
+  .drop-zone-text {
+    color: #c9bc93;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .drop-zone-hint {
+    color: rgba(190,165,100,0.55);
+    font-size: 12px;
+  }
+  #fileInput { display: none; }
+
+  .preview-wrap {
+    display: none;
+    text-align: center;
+  }
+  .preview-wrap.show { display: block; }
+  .preview-img {
+    max-width: 100%;
+    max-height: 240px;
+    border-radius: 8px;
+    border: 1px solid rgba(200,160,60,0.2);
+  }
+  .preview-info {
+    color: rgba(190,165,100,0.75);
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .preview-info strong { color: #ddb655; }
+
+  .option-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .option-btn {
+    flex: 1 1 auto;
+    min-width: 60px;
+    padding: 10px 12px;
+    background: rgba(20,40,65,0.8);
+    border: 1px solid rgba(200,160,60,0.25);
+    border-radius: 8px;
+    color: #c9bc93;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .option-btn:hover { border-color: #ddb655; }
+  #segmentGroup .option-btn {
+    min-width: 58px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .option-btn.active {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    border-color: #ddb655;
+    font-weight: 600;
+  }
+
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+  }
+  .switch-label {
+    color: #c9bc93;
+    font-size: 14px;
+  }
+  .switch-hint {
+    color: rgba(190,165,100,0.55);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .switch {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    background: rgba(200,160,60,0.2);
+    border-radius: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .switch.on { background: linear-gradient(135deg, #d4a840, #b08828); }
+  .switch-dot {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .switch.on .switch-dot { left: 23px; }
+
+  .process-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 2px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s;
+  }
+  .process-btn:active { transform: scale(0.98); }
+  .process-btn:disabled {
+    background: rgba(100,100,100,0.3);
+    color: rgba(190,165,100,0.4);
+    cursor: not-allowed;
+  }
+
+  .continue-btn {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
+    background: rgba(20,40,65,0.8);
+    border: 1px solid rgba(200,160,60,0.4);
+    border-radius: 12px;
+    color: #ddb655;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+    -webkit-tap-highlight-color: transparent;
+    transition: all 0.2s;
+  }
+  .continue-btn:hover {
+    background: rgba(221,182,85,0.12);
+    border-color: #ddb655;
+  }
+  .continue-btn:active { transform: scale(0.98); }
+  .continue-btn small {
+    display: block;
+    font-size: 11px;
+    color: rgba(190,165,100,0.6);
+    font-weight: 400;
+    letter-spacing: 0;
+    margin-top: 2px;
+  }
+
+  .progress-wrap {
+    display: none;
+    margin-top: 12px;
+  }
+  .progress-wrap.show { display: block; }
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(11,24,41,0.8);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d4a840, #ddb655);
+    width: 0%;
+    transition: width 0.3s;
+  }
+  .progress-text {
+    text-align: center;
+    color: rgba(190,165,100,0.75);
+    font-size: 12px;
+    margin-top: 6px;
+  }
+
+  .result-wrap {
+    display: none;
+  }
+  .result-wrap.show { display: block; }
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .result-item {
+    background: rgba(11,24,41,0.6);
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+  }
+  .result-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 6px;
+  }
+  .result-item-label {
+    color: #ddb655;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .result-item-size {
+    color: rgba(190,165,100,0.55);
+    font-size: 11px;
+  }
+
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    padding: 12px 24px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .tip {
+    font-size: 12px;
+    color: rgba(190,165,100,0.6);
+    padding: 10px 12px;
+    background: rgba(221,182,85,0.06);
+    border-left: 2px solid rgba(221,182,85,0.4);
+    border-radius: 4px;
+    margin-top: 10px;
+    line-height: 1.7;
+  }
+
+  /* === 预览微调区 === */
+  .preview-edit-wrap {
+    display: none;
+  }
+  .preview-edit-wrap.show { display: block; }
+
+  .preview-canvas-wrap {
+    position: relative;
+    width: 100%;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: #0a1422;
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .preview-canvas-inner {
+    position: relative;
+    width: 100%;
+  }
+  .preview-canvas-inner img {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+  .cut-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 44px;
+    margin-top: -22px;
+    cursor: ns-resize;
+    z-index: 10;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cut-line::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 2px;
+    background: #ddb655;
+    box-shadow: 0 0 8px rgba(221,182,85,0.8), 0 0 2px rgba(0,0,0,0.8);
+    transform: translateY(-50%);
+  }
+  .cut-line-handle {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .cut-line.active::before {
+    background: #fff5d4;
+    box-shadow: 0 0 14px rgba(255,245,212,1), 0 0 2px rgba(0,0,0,0.8);
+    height: 3px;
+  }
+  .cut-line.active .cut-line-handle {
+    background: #fff5d4;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  .segment-label {
+    position: absolute;
+    left: 6px;
+    background: rgba(11,24,41,0.92);
+    border: 1px solid rgba(200,160,60,0.35);
+    color: #ddb655;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 10px;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .edit-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .edit-toolbar button {
+    flex: 1 1 auto;
+    min-width: 90px;
+    padding: 10px 12px;
+    background: rgba(20,40,65,0.8);
+    border: 1px solid rgba(200,160,60,0.25);
+    border-radius: 8px;
+    color: #c9bc93;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .edit-toolbar button:hover { border-color: #ddb655; }
+  .edit-toolbar button.primary {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    font-weight: 700;
+    border-color: #ddb655;
+  }
+
+  .cut-info {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(11,24,41,0.6);
+    border-radius: 6px;
+    font-size: 12px;
+    color: rgba(190,165,100,0.75);
+    line-height: 1.8;
+  }
+  .cut-info strong { color: #ddb655; }
+
+  /* 单独下载按钮 */
+  .result-item {
+    position: relative;
+  }
+  .result-item .single-dl {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    background: rgba(11,24,41,0.85);
+    border: 1px solid rgba(200,160,60,0.5);
+    border-radius: 50%;
+    color: #ddb655;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .result-item .single-dl:hover {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+  }
+
+  /* 水印区 */
+  .watermark-row {
+    margin-top: 8px;
+  }
+  .watermark-input-wrap {
+    display: none;
+    margin-top: 10px;
+  }
+  .watermark-input-wrap.show { display: block; }
+  .watermark-input-wrap input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(11,24,41,0.6);
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    color: #e8dfc4;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 8px;
+  }
+  .watermark-input-wrap input:focus {
+    outline: none;
+    border-color: #ddb655;
+  }
+  .watermark-opts {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .watermark-opts .option-btn {
+    flex: 1 1 auto;
+    min-width: 72px;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  .wm-label {
+    font-size: 12px;
+    color: rgba(190,165,100,0.75);
+    margin-top: 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .wm-opacity-value {
+    color: #ddb655;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .wm-position-group .option-btn,
+  .watermark-input-wrap .option-group .option-btn {
+    flex: 1 1 auto;
+    min-width: 64px;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  /* 下载命名前缀 */
+  .name-prefix-wrap {
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    background: rgba(20,40,65,0.5);
+    border: 1px solid rgba(200,160,60,0.18);
+    border-radius: 10px;
+  }
+  .name-prefix-label {
+    display: block;
+    font-size: 12px;
+    color: #ddb655;
+    margin-bottom: 8px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .name-prefix-wrap input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(11,24,41,0.7);
+    border: 1px solid rgba(200,160,60,0.25);
+    border-radius: 8px;
+    color: #e8dfc4;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+  }
+  .name-prefix-wrap input:focus {
+    outline: none;
+    border-color: #ddb655;
+  }
+  .name-prefix-hint {
+    font-size: 11px;
+    color: rgba(190,165,100,0.55);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .name-prefix-preview {
+    font-size: 11px;
+    color: rgba(190,165,100,0.75);
+    margin-top: 6px;
+    font-family: "SF Mono", Consolas, monospace;
+    word-break: break-all;
+  }
+  .wm-tile-btn {
+    background: rgba(221,182,85,0.12) !important;
+    border-color: rgba(221,182,85,0.45) !important;
+  }
+  .wm-tile-btn.active {
+    background: linear-gradient(135deg, #d4a840, #b08828) !important;
+    color: #0b1829 !important;
+  }
+  .wm-slider {
+    width: 100%;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(11,24,41,0.8);
+    border-radius: 3px;
+    outline: none;
+    margin: 4px 0;
+  }
+  .wm-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    cursor: pointer;
+    border: 2px solid #ddb655;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .wm-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    cursor: pointer;
+    border: 2px solid #ddb655;
+  }
+
+  /* 模式切换 */
+  .mode-tabs {
+    display: flex;
+    gap: 0;
+    background: rgba(11,24,41,0.6);
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 4px;
+  }
+  .mode-tab {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 7px;
+    color: rgba(190,165,100,0.65);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mode-tab.active {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+  }
+  .mode-desc {
+    font-size: 12px;
+    color: rgba(190,165,100,0.6);
+    margin-top: 8px;
+    line-height: 1.6;
+    padding: 8px 10px;
+    background: rgba(221,182,85,0.05);
+    border-left: 2px solid rgba(221,182,85,0.35);
+    border-radius: 4px;
+  }
+
+  /* 手动模式提示 */
+  .manual-hint {
+    padding: 10px 12px;
+    background: rgba(221,182,85,0.08);
+    border: 1px dashed rgba(221,182,85,0.3);
+    border-radius: 6px;
+    font-size: 12px;
+    color: #c9bc93;
+    line-height: 1.7;
+    margin-bottom: 10px;
+  }
+  .manual-hint strong { color: #ddb655; }
+
+  /* 可点击添加切点的图片区 */
+  .preview-canvas-inner.click-to-add {
+    cursor: crosshair;
+  }
+
+  /* 切线上的删除按钮 */
+  .cut-line-delete {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(220,100,80,0.9);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cut-line-delete:hover {
+    background: rgb(220,100,80);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  /* 手动模式下,切点数显示 */
+  .manual-count-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+
+  /* 预览区:水印状态提示 */
+  .wm-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(11,24,41,0.6);
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: rgba(190,165,100,0.75);
+  }
+  .wm-status.on {
+    background: rgba(221,182,85,0.12);
+    border-color: rgba(221,182,85,0.5);
+    color: #ddb655;
+  }
+  .wm-status-icon {
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .wm-status-text {
+    flex: 1;
+    font-weight: 600;
+  }
+  .wm-status-btn {
+    background: rgba(20,40,65,0.8);
+    border: 1px solid rgba(200,160,60,0.35);
+    color: #c9bc93;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wm-status-btn:hover {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    border-color: #ddb655;
+  }
+
+  /* === 主 Tab 切换(切分/合成) === */
+  .main-tabs {
+    display: flex;
+    gap: 0;
+    background: rgba(11,24,41,0.8);
+    border: 1px solid rgba(200,160,60,0.3);
+    border-radius: 12px;
+    padding: 5px;
+    margin-bottom: 20px;
+  }
+  .main-tab {
+    flex: 1;
+    padding: 12px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: rgba(190,165,100,0.7);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: 1px;
+  }
+  .main-tab.active {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    box-shadow: 0 2px 8px rgba(221,182,85,0.3);
+  }
+
+  /* === 合成模式:图片列表 === */
+  .merge-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .merge-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(11,24,41,0.6);
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    cursor: grab;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .merge-item:hover { border-color: rgba(221,182,85,0.5); }
+  .merge-item.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
+  .merge-item.drag-over {
+    border-color: #ddb655;
+    background: rgba(221,182,85,0.12);
+  }
+  .merge-item-order {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .merge-item-thumb {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid rgba(200,160,60,0.2);
+    flex-shrink: 0;
+    background: #0a1422;
+  }
+  .merge-item-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .merge-item-size {
+    color: #ddb655;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .merge-item-name {
+    color: rgba(190,165,100,0.6);
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .merge-item-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .merge-item-btn {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: rgba(20,40,65,0.8);
+    border: 1px solid rgba(200,160,60,0.25);
+    border-radius: 6px;
+    color: #c9bc93;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1;
+  }
+  .merge-item-btn:hover {
+    background: linear-gradient(135deg, #d4a840, #b08828);
+    color: #0b1829;
+    border-color: #ddb655;
+  }
+  .merge-item-btn-del:hover {
+    background: rgba(220,100,80,0.9);
+    color: #fff;
+    border-color: rgba(220,100,80,1);
+  }
+  .merge-item-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .merge-item-btn:disabled:hover {
+    background: rgba(20,40,65,0.8);
+    color: #c9bc93;
+    border-color: rgba(200,160,60,0.25);
+  }
+
+  /* 合成结果预览 */
+  .merge-result-preview {
+    max-height: 400px;
+    overflow: auto;
+    background: #0a1422;
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+    -webkit-overflow-scrolling: touch;
+  }
+  .merge-result-preview img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  /* 横拼结果:宽大于高时,限制高度,让宽度自适应 */
+  .merge-result-preview.horizontal {
+    max-height: none;
+  }
+  .merge-result-preview.horizontal img {
+    max-width: 100%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  /* === 高清模式:原图 vs 结果对比 === */
+  .enhance-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .enhance-compare-item {
+    background: rgba(11,24,41,0.6);
+    border: 1px solid rgba(200,160,60,0.2);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .enhance-compare-label {
+    color: #ddb655;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .enhance-compare-item img {
+    width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+    border-radius: 4px;
+    display: block;
+    background: #0a1422;
+  }
+  .enhance-compare-size {
+    color: rgba(190,165,100,0.6);
+    font-size: 11px;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>长图智能分段</h1>
+      <p>自动避开文字切分 · 打包 ZIP 下载</p>
+    </div>
+
+    <div class="main-tabs">
+      <button class="main-tab active" data-mode="split">✂ 切分</button>
+      <button class="main-tab" data-mode="merge">🔗 合成</button>
+      <button class="main-tab" data-mode="enhance">✨ 高清</button>
+    </div>
+
+    <div id="splitMode">
+
+    <!-- 1. 上传 -->
+    <div class="section">
+      <div class="section-title">选择长图</div>
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-zone-icon">⬆</div>
+        <div class="drop-zone-text">点击选择 或 拖拽到此处</div>
+        <div class="drop-zone-hint">支持 JPG / PNG / WebP · 单张图片</div>
+      </div>
+      <input type="file" id="fileInput" accept="image/*">
+      <div class="preview-wrap" id="previewWrap">
+        <img class="preview-img" id="previewImg" alt="预览">
+        <div class="preview-info" id="previewInfo"></div>
+      </div>
+    </div>
+
+    <!-- 1.5 切分模式 -->
+    <div class="section">
+      <div class="section-title">切分模式</div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="smart">智能</button>
+        <button class="mode-tab" data-mode="equal">等分</button>
+        <button class="mode-tab" data-mode="manual">手动</button>
+      </div>
+      <div class="mode-desc" id="modeDesc">智能模式:在理论切点附近自动寻找浅色带,避免切断文字。</div>
+    </div>
+
+    <!-- 2. 切分段数 -->
+    <div class="section" id="segmentSection">
+      <div class="section-title">分成几段</div>
+      <div class="option-group" id="segmentGroup">
+        <button class="option-btn" data-value="2">2 段</button>
+        <button class="option-btn" data-value="3">3 段</button>
+        <button class="option-btn active" data-value="4">4 段</button>
+        <button class="option-btn" data-value="5">5 段</button>
+        <button class="option-btn" data-value="6">6 段</button>
+        <button class="option-btn" data-value="7">7 段</button>
+        <button class="option-btn" data-value="8">8 段</button>
+        <button class="option-btn" data-value="9">9 段</button>
+        <button class="option-btn" data-value="10">10 段</button>
+        <button class="option-btn" data-value="11">11 段</button>
+        <button class="option-btn" data-value="12">12 段</button>
+        <button class="option-btn" data-value="13">13 段</button>
+        <button class="option-btn" data-value="14">14 段</button>
+        <button class="option-btn" data-value="15">15 段</button>
+      </div>
+    </div>
+
+    <!-- 3. 选项开关 -->
+    <div class="section">
+      <div class="section-title">高级选项</div>
+      <div class="switch-row">
+        <div>
+          <div class="switch-label">智能检测浅色带切分</div>
+          <div class="switch-hint">在切点附近寻找空白带,避免切断文字</div>
+        </div>
+        <div class="switch on" id="smartSwitch">
+          <div class="switch-dot"></div>
+        </div>
+      </div>
+      <div class="switch-row">
+        <div>
+          <div class="switch-label">10% 重叠(不推荐)</div>
+          <div class="switch-hint">开启后实际切分位置会扩展,切点不再所见即所得</div>
+        </div>
+        <div class="switch" id="overlapSwitch">
+          <div class="switch-dot"></div>
+        </div>
+      </div>
+      <div class="switch-row">
+        <div>
+          <div class="switch-label">保持原始清晰度</div>
+          <div class="switch-hint">PNG 无损输出,不压缩</div>
+        </div>
+        <div class="switch on" id="qualitySwitch">
+          <div class="switch-dot"></div>
+        </div>
+      </div>
+      <div class="switch-row">
+        <div>
+          <div class="switch-label">自动加序号 (01/04)</div>
+          <div class="switch-hint">文件名格式: 长图_01_of_04.png</div>
+        </div>
+        <div class="switch on" id="numberSwitch">
+          <div class="switch-dot"></div>
+        </div>
+      </div>
+      <div class="switch-row watermark-row">
+        <div>
+          <div class="switch-label">添加水印</div>
+          <div class="switch-hint">在每段图片角落添加自定义文字水印</div>
+        </div>
+        <div class="switch" id="watermarkSwitch">
+          <div class="switch-dot"></div>
+        </div>
+      </div>
+      <div class="watermark-input-wrap" id="watermarkInputWrap">
+        <input type="text" id="watermarkText" placeholder="水印文字(如:品牌床垫终极折扣)" maxlength="20">
+
+        <div class="wm-label">位置</div>
+        <div class="option-group wm-position-group" data-field="wmPosition">
+          <button class="option-btn active" data-value="bottom-right">右下</button>
+          <button class="option-btn" data-value="bottom-left">左下</button>
+          <button class="option-btn" data-value="top-right">右上</button>
+          <button class="option-btn" data-value="top-left">左上</button>
+          <button class="option-btn" data-value="center">居中</button>
+          <button class="option-btn wm-tile-btn" data-value="tile">铺满(斜)</button>
+        </div>
+
+        <div class="wm-label">样式</div>
+        <div class="option-group" data-field="wmStyle">
+          <button class="option-btn active" data-value="solid">实印(带底色)</button>
+          <button class="option-btn" data-value="ghost">虚印(纯文字)</button>
+        </div>
+
+        <div class="wm-label">
+          透明度
+          <span class="wm-opacity-value" id="wmOpacityValue">70%</span>
+        </div>
+        <input type="range" id="wmOpacitySlider" class="wm-slider" min="20" max="100" step="5" value="70">
+      </div>
+    </div>
+
+
+    <!-- 4.5 预览微调 -->
+    <div class="section preview-edit-wrap" id="previewEditWrap">
+      <div class="section-title">切点预览 · 可拖动微调</div>
+      <div class="preview-canvas-wrap" id="previewCanvasWrap">
+        <div class="preview-canvas-inner" id="previewCanvasInner">
+          <!-- 图片和切点动态插入 -->
+        </div>
+      </div>
+      <div class="cut-info" id="cutInfo"></div>
+      <div class="wm-status" id="wmStatus">
+        <span class="wm-status-icon">⊘</span>
+        <span class="wm-status-text">水印未开启</span>
+        <button class="wm-status-btn" id="wmStatusBtn">去开启</button>
+      </div>
+      <div class="edit-toolbar">
+        <button id="redetectBtn">重新智能检测</button>
+        <button id="resetEqualBtn">回到平均切分</button>
+        <button id="confirmCutBtn" class="primary">按此切分 ↓</button>
+      </div>
+    </div>
+
+    <!-- 4. 处理 -->
+    <button class="process-btn" id="processBtn" disabled>请先上传长图</button>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">处理中...</div>
+    </div>
+
+    <!-- 5. 结果 -->
+    <div class="result-wrap section" id="resultWrap">
+      <div class="section-title">切分结果</div>
+      <div class="result-grid" id="resultGrid"></div>
+      <div class="name-prefix-wrap">
+        <label class="name-prefix-label" for="namePrefix">📦 下载命名</label>
+        <input type="text" id="namePrefix" value="长图分段" placeholder="自定义命名(如:洛杉矶pro)" maxlength="40">
+        <div class="name-prefix-hint">ZIP 压缩包和里面的每张切图都会用这个前缀,后面的 _份数_日期时间 自动生成</div>
+        <div class="name-prefix-preview" id="namePrefixPreview"></div>
+      </div>
+      <button class="process-btn" id="downloadBtn">下载 ZIP 压缩包</button>
+      <button class="continue-btn" id="continueBtn">
+        + 继续切下一张
+        <small>保留当前所有设置(段数 / 模式 / 水印 / 命名)</small>
+      </button>
+      <div class="tip" id="resultTip"></div>
+    </div>
+
+    </div><!-- /#splitMode -->
+
+    <div id="mergeMode" style="display:none">
+
+      <!-- 1. 多图上传 -->
+      <div class="section">
+        <div class="section-title">选择要合成的图片</div>
+        <div class="drop-zone" id="mergeDropZone">
+          <div class="drop-zone-icon">⬆</div>
+          <div class="drop-zone-text">点击或拖拽 多张 图片到此处</div>
+          <div class="drop-zone-hint">支持批量选择 · 按顺序添加 · 至少 2 张</div>
+        </div>
+        <input type="file" id="mergeFileInput" accept="image/*" multiple>
+      </div>
+
+      <!-- 2. 图片列表 -->
+      <div class="section" id="mergeListWrap" style="display:none">
+        <div class="section-title">
+          已添加的图片
+          <span id="mergeCountBadge" class="manual-count-badge">0 张</span>
+        </div>
+        <div class="merge-list" id="mergeList"></div>
+        <div class="tip" style="margin-bottom:10px">
+          💡 桌面:拖动卡片可排序 · 移动:用 ↑↓ 按钮调序
+        </div>
+        <div class="edit-toolbar">
+          <button id="mergeAddMoreBtn">+ 继续添加</button>
+          <button id="mergeReverseBtn">⇅ 反转顺序</button>
+          <button id="mergeClearBtn">清空所有</button>
+        </div>
+      </div>
+
+      <!-- 3. 合成选项 -->
+      <div class="section" id="mergeOptionsWrap" style="display:none">
+        <div class="section-title">合成选项</div>
+
+        <div class="wm-label">拼接方向</div>
+        <div class="option-group" data-mergefield="direction">
+          <button class="option-btn active" data-value="vertical">↕ 上下拼(长图)</button>
+          <button class="option-btn" data-value="horizontal">↔ 左右拼(对比/举证)</button>
+        </div>
+        <div class="mode-desc" id="directionDesc">上下拼:常用于商品详情长图、聊天记录连续截图。</div>
+
+        <div class="wm-label" id="baseLabel">基准宽度 <span style="color:rgba(190,165,100,0.55);font-weight:400">(不同宽度如何处理)</span></div>
+        <div class="option-group" data-mergefield="baseWidth">
+          <button class="option-btn active" data-value="min"   data-label-v="以最窄为准" data-label-h="以最矮为准">以最窄为准</button>
+          <button class="option-btn"        data-value="max"   data-label-v="以最宽为准" data-label-h="以最高为准">以最宽为准</button>
+          <button class="option-btn"        data-value="first" data-label-v="以第一张为准" data-label-h="以第一张为准">以第一张为准</button>
+        </div>
+        <div class="mode-desc" id="baseWidthDesc">以最窄为准:宽图按比例缩小,不放大窄图,画质最稳(推荐)。</div>
+
+        <div class="wm-label">图间间隔</div>
+        <div class="option-group" data-mergefield="gap">
+          <button class="option-btn active" data-value="0">无缝</button>
+          <button class="option-btn" data-value="10">10px</button>
+          <button class="option-btn" data-value="20">20px</button>
+          <button class="option-btn" data-value="40">40px</button>
+        </div>
+
+        <div class="wm-label" id="gapColorLabel" style="display:none">间隔色</div>
+        <div class="option-group" id="gapColorGroup" data-mergefield="gapColor" style="display:none">
+          <button class="option-btn active" data-value="#ffffff">白</button>
+          <button class="option-btn" data-value="#0b1829">藏青</button>
+          <button class="option-btn" data-value="#000000">黑</button>
+          <button class="option-btn" data-value="#f5f5f5">浅灰</button>
+        </div>
+      </div>
+
+      <!-- 4. 高级选项 -->
+      <div class="section" id="mergeAdvancedWrap" style="display:none">
+        <div class="section-title">高级选项</div>
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">保持原始清晰度</div>
+            <div class="switch-hint">PNG 无损输出,不压缩(文件稍大)</div>
+          </div>
+          <div class="switch on" id="mergeQualitySwitch"><div class="switch-dot"></div></div>
+        </div>
+        <div class="switch-row watermark-row">
+          <div>
+            <div class="switch-label">添加水印</div>
+            <div class="switch-hint">在合成后的长图整体添加文字水印</div>
+          </div>
+          <div class="switch" id="mergeWatermarkSwitch"><div class="switch-dot"></div></div>
+        </div>
+        <div class="watermark-input-wrap" id="mergeWatermarkInputWrap">
+          <input type="text" id="mergeWatermarkText" placeholder="水印文字(如:品牌床垫终极折扣)" maxlength="20">
+          <div class="wm-label">位置</div>
+          <div class="option-group wm-position-group" data-mergefield="wmPosition">
+            <button class="option-btn active" data-value="bottom-right">右下</button>
+            <button class="option-btn" data-value="bottom-left">左下</button>
+            <button class="option-btn" data-value="top-right">右上</button>
+            <button class="option-btn" data-value="top-left">左上</button>
+            <button class="option-btn" data-value="center">居中</button>
+            <button class="option-btn wm-tile-btn" data-value="tile">铺满(斜)</button>
+          </div>
+          <div class="wm-label">样式</div>
+          <div class="option-group" data-mergefield="wmStyle">
+            <button class="option-btn active" data-value="solid">实印(带底色)</button>
+            <button class="option-btn" data-value="ghost">虚印(纯文字)</button>
+          </div>
+          <div class="wm-label">
+            透明度
+            <span class="wm-opacity-value" id="mergeWmOpacityValue">70%</span>
+          </div>
+          <input type="range" id="mergeWmOpacitySlider" class="wm-slider" min="20" max="100" step="5" value="70">
+        </div>
+      </div>
+
+      <!-- 5. 合成按钮 -->
+      <button class="process-btn" id="mergeProcessBtn" disabled>请先添加至少 2 张图片</button>
+
+      <div class="progress-wrap" id="mergeProgressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="mergeProgressFill"></div></div>
+        <div class="progress-text" id="mergeProgressText">处理中...</div>
+      </div>
+
+      <!-- 6. 结果 -->
+      <div class="result-wrap section" id="mergeResultWrap">
+        <div class="section-title">合成结果</div>
+        <div id="mergeResultPreview" class="merge-result-preview"></div>
+        <div class="cut-info" id="mergeResultInfo"></div>
+        <div class="name-prefix-wrap">
+          <label class="name-prefix-label" for="mergeNamePrefix">📦 下载命名</label>
+          <input type="text" id="mergeNamePrefix" value="长图合成" placeholder="自定义命名(如:洛杉矶pro详情)" maxlength="40">
+          <div class="name-prefix-hint">输出文件名会用这个前缀,后面的 _N张_日期时间 自动生成</div>
+          <div class="name-prefix-preview" id="mergeNamePrefixPreview"></div>
+        </div>
+        <button class="process-btn" id="mergeDownloadBtn">下载合成长图</button>
+        <button class="continue-btn" id="mergeToEnhanceBtn">
+          ✨ 送去一键高清
+          <small>提升清晰度 / 锐化 / 放大倍数</small>
+        </button>
+        <button class="continue-btn" id="mergeContinueBtn">
+          + 继续合成下一组
+          <small>保留当前所有设置(方向 / 基准 / 间隔 / 水印 / 命名)</small>
+        </button>
+      </div>
+
+    </div><!-- /#mergeMode -->
+
+    <div id="enhanceMode" style="display:none">
+
+      <!-- 1. 上传 -->
+      <div class="section">
+        <div class="section-title">选择要高清化的图片</div>
+        <div class="drop-zone" id="enhanceDropZone">
+          <div class="drop-zone-icon">✨</div>
+          <div class="drop-zone-text">点击或拖拽 图片到此处</div>
+          <div class="drop-zone-hint">支持 JPG / PNG / WebP · 单图(含长图)</div>
+        </div>
+        <input type="file" id="enhanceFileInput" accept="image/*">
+        <div class="preview-wrap" id="enhancePreviewWrap">
+          <img class="preview-img" id="enhancePreviewImg" alt="预览">
+          <div class="preview-info" id="enhancePreviewInfo"></div>
+        </div>
+      </div>
+
+      <!-- 2. 高清化参数 -->
+      <div class="section" id="enhanceOptionsWrap" style="display:none">
+        <div class="section-title">高清方案</div>
+
+        <div class="wm-label">场景预设 <span style="color:rgba(190,165,100,0.55);font-weight:400">(一键选最合适参数)</span></div>
+        <div class="option-group" data-enhfield="preset">
+          <button class="option-btn" data-value="text">文字截图</button>
+          <button class="option-btn active" data-value="photo">商品图/照片</button>
+          <button class="option-btn" data-value="general">通用增强</button>
+          <button class="option-btn" data-value="deblur">去模糊(强)</button>
+          <button class="option-btn" data-value="custom">自定义</button>
+        </div>
+        <div class="mode-desc" id="presetDesc">商品图/照片:提升对比与饱和度,让颜色更鲜活,轻度锐化(推荐)。</div>
+
+        <div class="wm-label">放大倍数 <span style="color:rgba(190,165,100,0.55);font-weight:400" id="enhSizeHint"></span></div>
+        <div class="option-group" data-enhfield="scale">
+          <button class="option-btn active" data-value="1">1×(仅增强)</button>
+          <button class="option-btn" data-value="2">2×</button>
+          <button class="option-btn" data-value="3">3×</button>
+          <button class="option-btn" data-value="4">4×</button>
+        </div>
+
+        <div class="wm-label">锐化强度</div>
+        <div class="option-group" data-enhfield="sharpen">
+          <button class="option-btn" data-value="0">关闭</button>
+          <button class="option-btn active" data-value="1">轻</button>
+          <button class="option-btn" data-value="2">中</button>
+          <button class="option-btn" data-value="3">强</button>
+        </div>
+
+        <div class="wm-label">
+          对比度提升 <span class="wm-opacity-value" id="enhContrastValue">+15%</span>
+        </div>
+        <input type="range" id="enhContrastSlider" class="wm-slider" min="0" max="40" step="5" value="15">
+
+        <div class="wm-label">
+          饱和度提升 <span class="wm-opacity-value" id="enhSaturationValue">+20%</span>
+        </div>
+        <input type="range" id="enhSaturationSlider" class="wm-slider" min="0" max="50" step="5" value="20">
+
+        <div class="switch-row" style="margin-top:12px">
+          <div>
+            <div class="switch-label">PNG 无损输出</div>
+            <div class="switch-hint">推荐开启,避免二次压缩</div>
+          </div>
+          <div class="switch on" id="enhanceQualitySwitch"><div class="switch-dot"></div></div>
+        </div>
+      </div>
+
+      <!-- 3. 处理按钮 -->
+      <button class="process-btn" id="enhanceProcessBtn" disabled>请先上传图片</button>
+
+      <div class="progress-wrap" id="enhanceProgressWrap">
+        <div class="progress-bar"><div class="progress-fill" id="enhanceProgressFill"></div></div>
+        <div class="progress-text" id="enhanceProgressText">处理中...</div>
+      </div>
+
+      <!-- 4. 对比预览 + 结果 -->
+      <div class="result-wrap section" id="enhanceResultWrap">
+        <div class="section-title">高清化结果</div>
+        <div class="enhance-compare">
+          <div class="enhance-compare-item">
+            <div class="enhance-compare-label">原图</div>
+            <img id="enhanceOrigImg" alt="原图">
+            <div class="enhance-compare-size" id="enhanceOrigSize"></div>
+          </div>
+          <div class="enhance-compare-item">
+            <div class="enhance-compare-label">高清后</div>
+            <img id="enhanceResultImg" alt="高清后">
+            <div class="enhance-compare-size" id="enhanceResultSize"></div>
+          </div>
+        </div>
+        <div class="cut-info" id="enhanceResultInfo"></div>
+        <div class="name-prefix-wrap">
+          <label class="name-prefix-label" for="enhanceNamePrefix">📦 下载命名</label>
+          <input type="text" id="enhanceNamePrefix" value="高清图" placeholder="自定义命名" maxlength="40">
+          <div class="name-prefix-preview" id="enhanceNamePrefixPreview"></div>
+        </div>
+        <button class="process-btn" id="enhanceDownloadBtn">下载高清图</button>
+        <button class="continue-btn" id="enhanceContinueBtn">
+          + 继续处理下一张
+          <small>保留当前所有参数</small>
+        </button>
+      </div>
+
+    </div><!-- /#enhanceMode -->
+  </div>
+
+  <div class="toast" id="toast">提示</div>
+
+<script>
+  const state = {
+    file: null,
+    img: null,
+    segments: 4,
+    smart: true,
+    overlap: false,
+    quality: true,
+    number: true,
+    mode: 'smart',
+    watermark: false,
+    wmText: '',
+    wmPosition: 'bottom-right',
+    wmStyle: 'solid',
+    wmOpacity: 0.7,
+    results: []
+  };
+
+  // === 上传处理 ===
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+  ['dragover', 'dragenter'].forEach(ev => {
+    dropZone.addEventListener(ev, e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(ev => {
+    dropZone.addEventListener(ev, e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    });
+  });
+  dropZone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) handleFile(f);
+  });
+
+  function handleFile(file) {
+    state.file = file;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        state.img = img;
+        document.getElementById('previewImg').src = e.target.result;
+        const sizeKB = (file.size / 1024).toFixed(0);
+        const sizeStr = sizeKB > 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+        document.getElementById('previewInfo').innerHTML =
+          `<strong>${img.width} × ${img.height}</strong> px · ${sizeStr} · ${file.name}`;
+        document.getElementById('previewWrap').classList.add('show');
+        document.getElementById('processBtn').disabled = false;
+        document.getElementById('processBtn').textContent = '开始切分';
+        document.getElementById('resultWrap').classList.remove('show');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // === 分段选择 ===
+  document.getElementById('segmentGroup').querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('segmentGroup').querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.segments = parseInt(btn.dataset.value);
+    });
+  });
+
+  // === 水印按钮组:位置 / 样式 ===
+  // 每组内互斥选中,点击时写入对应的 state 字段
+  ['wmPosition', 'wmStyle'].forEach(fieldName => {
+    const group = document.querySelector(`[data-field="${fieldName}"]`);
+    if (!group) return;
+    group.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state[fieldName] = btn.dataset.value;
+      });
+    });
+  });
+
+  // === 开关 ===
+  ['smart', 'overlap', 'quality', 'number', 'watermark'].forEach(key => {
+    const sw = document.getElementById(key + 'Switch');
+    sw.addEventListener('click', () => {
+      state[key] = !state[key];
+      sw.classList.toggle('on', state[key]);
+      if (key === 'watermark') {
+        document.getElementById('watermarkInputWrap').classList.toggle('show', state[key]);
+      }
+    });
+  });
+
+  // === 模式切换 ===
+  const modeDescs = {
+    smart: '智能模式:在理论切点附近自动寻找浅色带,避免切断文字。',
+    equal: '等分模式:按段数平均切分,不做智能检测。',
+    manual: '手动模式:自由点击图上任意位置添加切点,双击切线删除。<strong>不限段数</strong>。'
+  };
+
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.mode = tab.dataset.mode;
+      document.getElementById('modeDesc').innerHTML = modeDescs[state.mode];
+
+      // 手动模式下隐藏"分成几段"和"智能检测"开关
+      const segSection = document.getElementById('segmentSection');
+      const smartSwitchRow = document.getElementById('smartSwitch').closest('.switch-row');
+      if (state.mode === 'manual') {
+        segSection.style.display = 'none';
+        smartSwitchRow.style.display = 'none';
+      } else {
+        segSection.style.display = '';
+        smartSwitchRow.style.display = '';
+        // 智能/等分:同步 smart 开关状态
+        state.smart = (state.mode === 'smart');
+        const sw = document.getElementById('smartSwitch');
+        sw.classList.toggle('on', state.smart);
+      }
+
+      // 如果已经加载了图片,按钮文字要反映模式
+      if (state.img) {
+        document.getElementById('processBtn').textContent =
+          state.mode === 'manual' ? '进入手动切点' : '预览切点';
+      }
+    });
+  });
+
+  // 水印文本同步
+  // 命名前缀实时预览
+  function updateNamePreview() {
+    const input = document.getElementById('namePrefix');
+    const preview = document.getElementById('namePrefixPreview');
+    if (!input || !preview) return;
+    const prefix = (input.value || '').trim() || '长图分段';
+    const now = new Date();
+    const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    // 优先用实际切出的份数,未切分时fallback到参数
+    const n = (state.results && state.results.length) || state.segments || 0;
+    if (n === 0) { preview.innerHTML = ''; return; }
+    const ext = state.quality ? 'png' : 'jpg';
+    const segPrefix = prefix !== '长图分段' ? prefix : '长图';
+    const nStr = String(n).padStart(2,'0');
+    preview.innerHTML = `📁 <b>${prefix}_${n}份_${ts}.zip</b><br>　├ ${segPrefix}_01_of_${nStr}.${ext}<br>　└ ${segPrefix}_${nStr}_of_${nStr}.${ext}`;
+  }
+  document.getElementById('namePrefix').addEventListener('input', updateNamePreview);
+  setTimeout(updateNamePreview, 100);
+
+  document.getElementById('watermarkText').addEventListener('input', e => {
+    state.wmText = e.target.value.trim();
+  });
+
+  // 水印透明度滑动条
+  document.getElementById('wmOpacitySlider').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    state.wmOpacity = v / 100;
+    document.getElementById('wmOpacityValue').textContent = v + '%';
+  });
+
+  // === 智能检测浅色带 ===
+  // 在 [targetY - searchRange, targetY + searchRange] 内找亮度最高、行内颜色方差最小的一行作为切点
+  function findSmartCutPoint(imageData, targetY, searchRange, width) {
+    const data = imageData.data;
+    const height = imageData.height;
+    const startY = Math.max(0, targetY - searchRange);
+    const endY = Math.min(height - 1, targetY + searchRange);
+
+    let bestY = targetY;
+    let bestScore = -Infinity;
+
+    // 采样步长:大图提速
+    const stepX = Math.max(1, Math.floor(width / 100));
+
+    for (let y = startY; y <= endY; y += 2) {
+      let sumBrightness = 0;
+      let sumVariance = 0;
+      let count = 0;
+      let minB = 255, maxB = 0;
+
+      // 窗口: 上下各检查3行取平均,判断是不是"一条带"而不是偶然一行
+      for (let dy = -2; dy <= 2; dy++) {
+        const yy = y + dy;
+        if (yy < 0 || yy >= height) continue;
+        for (let x = 0; x < width; x += stepX) {
+          const idx = (yy * width + x) * 4;
+          const r = data[idx], g = data[idx+1], b = data[idx+2];
+          const brightness = (r + g + b) / 3;
+          sumBrightness += brightness;
+          if (brightness < minB) minB = brightness;
+          if (brightness > maxB) maxB = brightness;
+          count++;
+        }
+      }
+
+      const avgBrightness = sumBrightness / count;
+      const contrast = maxB - minB;  // 行内对比度,越小越"干净"
+
+      // 评分: 越亮+对比度越小 = 越可能是浅色带
+      // 并且离目标点越近越好(避免跑太远)
+      const distancePenalty = Math.abs(y - targetY) / searchRange * 30;
+      const score = avgBrightness - contrast * 0.5 - distancePenalty;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestY = y;
+      }
+    }
+    return bestY;
+  }
+
+  // === 切分处理:两阶段 ===
+  // 阶段1:点击"开始切分"→ 计算切点并进入预览微调
+  // 阶段2:在预览区点"按此切分"→ 真正执行切分并打包
+
+  document.getElementById('processBtn').addEventListener('click', async () => {
+    if (!state.img) return;
+    try {
+      await computeAndShowPreview();
+      // 滚动到预览区
+      document.getElementById('previewEditWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.error(err);
+      showToast('计算失败: ' + err.message);
+    }
+  });
+
+  async function computeAndShowPreview() {
+    const img = state.img;
+    const width = img.width;
+    const height = img.height;
+    const n = state.segments;
+
+    // 读取像素(如开启智能)
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    let imageData = null;
+    if (state.smart) {
+      imageData = ctx.getImageData(0, 0, width, height);
+    }
+
+    // 计算切点(内部,不含 0 和 height)
+    let innerCuts = [];
+    if (state.mode === 'manual') {
+      // 手动模式:不预设任何切点,用户点击添加
+      innerCuts = [];
+    } else {
+      for (let i = 1; i < n; i++) {
+        let targetY = Math.round(height * i / n);
+        if (state.smart && imageData) {
+          const searchRange = Math.round(height / n * 0.15);
+          targetY = findSmartCutPoint(imageData, targetY, searchRange, width);
+        }
+        innerCuts.push(targetY);
+      }
+    }
+    state.innerCuts = innerCuts;
+    state.imageData = imageData;
+
+    renderCutPreview();
+    document.getElementById('previewEditWrap').classList.add('show');
+    document.getElementById('resultWrap').classList.remove('show');
+  }
+
+  function renderCutPreview() {
+    const inner = document.getElementById('previewCanvasInner');
+    inner.innerHTML = '';
+
+    // 手动模式样式
+    if (state.mode === 'manual') {
+      inner.classList.add('click-to-add');
+    } else {
+      inner.classList.remove('click-to-add');
+    }
+
+    // 插入图片
+    const img = document.createElement('img');
+    img.src = state.img.src;
+    img.alt = '长图预览';
+    inner.appendChild(img);
+
+    const height = state.img.height;
+    // 段数:手动模式下 = 切点数+1,其他模式 = state.segments
+    const n = state.mode === 'manual' ? state.innerCuts.length + 1 : state.segments;
+    const fullCuts = [0, ...state.innerCuts, height];
+
+    // 插入段标签
+    for (let i = 0; i < n; i++) {
+      const segTop = fullCuts[i];
+      const segBottom = fullCuts[i+1];
+      const segMid = (segTop + segBottom) / 2;
+      const label = document.createElement('div');
+      label.className = 'segment-label';
+      label.textContent = `第 ${i+1} 段`;
+      label.style.top = `calc(${(segMid / height) * 100}% - 10px)`;
+      inner.appendChild(label);
+    }
+
+    // 插入可拖动切线
+    state.innerCuts.forEach((y, idx) => {
+      const line = document.createElement('div');
+      line.className = 'cut-line';
+      line.dataset.idx = idx;
+      line.style.top = `${(y / height) * 100}%`;
+      // 手动模式下加删除按钮
+      const deleteBtn = state.mode === 'manual'
+        ? `<button class="cut-line-delete" data-idx="${idx}" title="删除此切点">×</button>`
+        : '';
+      line.innerHTML = `<div class="cut-line-handle">↕ 切点 ${idx+1}</div>${deleteBtn}`;
+      inner.appendChild(line);
+      attachDrag(line, idx);
+
+      // 删除按钮事件
+      if (state.mode === 'manual') {
+        const btn = line.querySelector('.cut-line-delete');
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          state.innerCuts.splice(idx, 1);
+          renderCutPreview();
+          showToast('已删除切点');
+        });
+        // 双击切线也能删除
+        line.addEventListener('dblclick', (e) => {
+          e.stopPropagation();
+          state.innerCuts.splice(idx, 1);
+          renderCutPreview();
+          showToast('已删除切点');
+        });
+      }
+    });
+
+    // 手动模式:点击图片空白处添加切点
+    if (state.mode === 'manual') {
+      // 给 inner 加点击监听(但要排除切线区域)
+      inner.onclick = (e) => {
+        // 忽略切线、段标签、删除按钮的点击
+        if (e.target.closest('.cut-line') || e.target.closest('.cut-line-delete') || e.target.closest('.segment-label')) {
+          return;
+        }
+        const rect = inner.getBoundingClientRect();
+        const clickY = e.clientY - rect.top;
+        const origY = Math.round((clickY / rect.height) * height);
+        // 检查是否太靠近已有切点(避免重复)
+        const minGap = height * 0.015;  // 1.5% 最小间隔
+        const tooClose = state.innerCuts.some(y => Math.abs(y - origY) < minGap);
+        if (tooClose) {
+          showToast('离已有切点太近');
+          return;
+        }
+        // 边界检查
+        if (origY < height * 0.015 || origY > height * 0.985) {
+          showToast('太靠近图片边缘');
+          return;
+        }
+        state.innerCuts.push(origY);
+        state.innerCuts.sort((a, b) => a - b);
+        renderCutPreview();
+      };
+    } else {
+      inner.onclick = null;
+    }
+
+    // 更新工具栏按钮文字
+    const redetectBtn = document.getElementById('redetectBtn');
+    const resetEqualBtn = document.getElementById('resetEqualBtn');
+    if (state.mode === 'manual') {
+      redetectBtn.textContent = '清空所有切点';
+      resetEqualBtn.style.display = 'none';
+    } else {
+      redetectBtn.textContent = '重新智能检测';
+      resetEqualBtn.style.display = '';
+    }
+
+    updateCutInfo();
+    updateWmStatus();
+  }
+
+  function updateWmStatus() {
+    const statusEl = document.getElementById('wmStatus');
+    if (!statusEl) return;
+    const icon = statusEl.querySelector('.wm-status-icon');
+    const text = statusEl.querySelector('.wm-status-text');
+    const btn = statusEl.querySelector('.wm-status-btn');
+
+    if (state.watermark && state.wmText) {
+      statusEl.classList.add('on');
+      icon.textContent = '✓';
+      const posMap = {
+        'bottom-right': '右下', 'bottom-left': '左下',
+        'top-right': '右上', 'top-left': '左上',
+        'center': '居中', 'tile': '铺满(斜)'
+      };
+      const styleMap = { solid: '实印', ghost: '虚印' };
+      text.innerHTML = `水印已开启 · <span style="color:#fff5d4">${posMap[state.wmPosition] || ''} / ${styleMap[state.wmStyle] || ''} / ${Math.round(state.wmOpacity*100)}%</span>`;
+      btn.textContent = '修改';
+    } else if (state.watermark && !state.wmText) {
+      statusEl.classList.remove('on');
+      icon.textContent = '⚠';
+      text.innerHTML = '水印已开,但<span style="color:#e88a73">未填文字</span>';
+      btn.textContent = '去填写';
+    } else {
+      statusEl.classList.remove('on');
+      icon.textContent = '⊘';
+      text.textContent = '水印未开启';
+      btn.textContent = '去开启';
+    }
+  }
+
+  // "去开启/修改"按钮点击:滚动到水印设置区 + 若未开则自动打开
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('wmStatusBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        const wmSwitch = document.getElementById('watermarkSwitch');
+        const wmInputWrap = document.getElementById('watermarkInputWrap');
+        // 如果没开,自动打开
+        if (!state.watermark) {
+          state.watermark = true;
+          wmSwitch.classList.add('on');
+          wmInputWrap.classList.add('show');
+        }
+        // 滚动到水印区
+        wmSwitch.closest('.section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // 聚焦输入框
+        setTimeout(() => {
+          document.getElementById('watermarkText').focus();
+        }, 500);
+      });
+    }
+  });
+
+  // 水印任何设置变化时刷新状态条
+  // 监听所有水印相关控件
+  document.addEventListener('DOMContentLoaded', () => {
+    const wmSwitch = document.getElementById('watermarkSwitch');
+    const wmText = document.getElementById('watermarkText');
+    const wmSlider = document.getElementById('wmOpacitySlider');
+    if (wmSwitch) wmSwitch.addEventListener('click', () => setTimeout(updateWmStatus, 0));
+    if (wmText) wmText.addEventListener('input', updateWmStatus);
+    if (wmSlider) wmSlider.addEventListener('input', updateWmStatus);
+    // 位置和样式按钮组
+    document.querySelectorAll('[data-field="wmPosition"] .option-btn, [data-field="wmStyle"] .option-btn').forEach(b => {
+      b.addEventListener('click', () => setTimeout(updateWmStatus, 0));
+    });
+  });
+
+  function attachDrag(line, idx) {
+    let startY = 0;
+    let startTop = 0;
+    let containerHeight = 0;
+    let origHeight = state.img.height;
+    let dragging = false;
+
+    const onDown = (e) => {
+      dragging = true;
+      line.classList.add('active');
+      const evt = e.touches ? e.touches[0] : e;
+      startY = evt.clientY;
+      const rect = line.parentElement.getBoundingClientRect();
+      containerHeight = rect.height;
+      startTop = parseFloat(line.style.top);  // %
+      e.preventDefault();
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const evt = e.touches ? e.touches[0] : e;
+      const deltaY = evt.clientY - startY;
+      const deltaPct = (deltaY / containerHeight) * 100;
+      let newTop = startTop + deltaPct;
+
+      // 限制范围:不能越过相邻切点或边界
+      const minPct = idx === 0 ? 2 : (state.innerCuts[idx-1] / origHeight) * 100 + 2;
+      const maxPct = idx === state.innerCuts.length - 1 ? 98 : (state.innerCuts[idx+1] / origHeight) * 100 - 2;
+      newTop = Math.max(minPct, Math.min(maxPct, newTop));
+
+      line.style.top = newTop + '%';
+      const newY = Math.round((newTop / 100) * origHeight);
+      state.innerCuts[idx] = newY;
+
+      // 实时更新段标签位置
+      updateSegmentLabels();
+      updateCutInfo();
+      e.preventDefault();
+    };
+    const onUp = () => {
+      dragging = false;
+      line.classList.remove('active');
+    };
+
+    line.addEventListener('mousedown', onDown);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    line.addEventListener('touchstart', onDown, { passive: false });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onUp);
+  }
+
+  function updateSegmentLabels() {
+    const inner = document.getElementById('previewCanvasInner');
+    const labels = inner.querySelectorAll('.segment-label');
+    const height = state.img.height;
+    const fullCuts = [0, ...state.innerCuts, height];
+    labels.forEach((label, i) => {
+      const segMid = (fullCuts[i] + fullCuts[i+1]) / 2;
+      label.style.top = `calc(${(segMid / height) * 100}% - 10px)`;
+    });
+  }
+
+  function updateCutInfo() {
+    const height = state.img.height;
+    const fullCuts = [0, ...state.innerCuts, height];
+    const n = state.mode === 'manual' ? state.innerCuts.length + 1 : state.segments;
+
+    if (state.mode === 'manual' && state.innerCuts.length === 0) {
+      document.getElementById('cutInfo').innerHTML =
+        `原图高度 <strong>${height}px</strong> · <span style="color:#ddb655;">请在图上点击任意位置添加切点</span>`;
+      return;
+    }
+
+    const parts = [];
+    for (let i = 0; i < fullCuts.length - 1; i++) {
+      const segH = fullCuts[i+1] - fullCuts[i];
+      parts.push(`第${i+1}段:<strong>${segH}px</strong>`);
+    }
+    const modeTag = state.mode === 'manual'
+      ? ` <span class="manual-count-badge">手动 ${n} 段</span>`
+      : '';
+    document.getElementById('cutInfo').innerHTML =
+      `原图高度 <strong>${height}px</strong> · 共${n}段${modeTag}<br>` + parts.join(' · ');
+  }
+
+  // 重新智能检测 / 手动模式下作为"清空所有切点"
+  document.getElementById('redetectBtn').addEventListener('click', async () => {
+    if (!state.img) return;
+    if (state.mode === 'manual') {
+      state.innerCuts = [];
+      renderCutPreview();
+      showToast('已清空所有切点');
+    } else {
+      await computeAndShowPreview();
+      showToast('已重新检测');
+    }
+  });
+
+  // 回到平均切分 / 手动模式下不可用
+  document.getElementById('resetEqualBtn').addEventListener('click', () => {
+    if (state.mode === 'manual') {
+      showToast('手动模式不支持平均切分');
+      return;
+    }
+    const height = state.img.height;
+    const n = state.segments;
+    const innerCuts = [];
+    for (let i = 1; i < n; i++) {
+      innerCuts.push(Math.round(height * i / n));
+    }
+    state.innerCuts = innerCuts;
+    renderCutPreview();
+    showToast('已回到平均切分');
+  });
+
+  // 确认切分
+  document.getElementById('confirmCutBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('confirmCutBtn');
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+    document.getElementById('progressWrap').classList.add('show');
+    document.getElementById('resultWrap').classList.remove('show');
+
+    try {
+      await executeSlice();
+      showToast('切分完成!');
+      document.getElementById('resultWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.error(err);
+      showToast('处理失败: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '按此切分 ↓';
+      document.getElementById('progressWrap').classList.remove('show');
+    }
+  });
+
+  async function executeSlice() {
+    const img = state.img;
+    const width = img.width;
+    const height = img.height;
+    const n = state.mode === 'manual' ? state.innerCuts.length + 1 : state.segments;
+    const cutPoints = [0, ...state.innerCuts, height];
+
+    // 手动模式下若未添加任何切点,直接切成整张(相当于没切)
+    if (state.mode === 'manual' && state.innerCuts.length === 0) {
+      showToast('请先在图上点击添加至少1个切点');
+      throw new Error('未添加切点');
+    }
+
+    state.results = [];
+    const overlapPx = state.overlap ? Math.round(height / n * 0.1) : 0;
+
+    for (let i = 0; i < n; i++) {
+      updateProgress((i / n) * 90, `切分第 ${i+1}/${n} 段...`);
+      await sleep(10);
+
+      let segStart = cutPoints[i];
+      let segEnd = cutPoints[i+1];
+
+      if (overlapPx > 0) {
+        if (i > 0) segStart = Math.max(0, segStart - overlapPx);
+        if (i < n - 1) segEnd = Math.min(height, segEnd + overlapPx);
+      }
+
+      const segHeight = segEnd - segStart;
+      const segCanvas = document.createElement('canvas');
+      segCanvas.width = width;
+      segCanvas.height = segHeight;
+      const segCtx = segCanvas.getContext('2d');
+      segCtx.drawImage(img, 0, segStart, width, segHeight, 0, 0, width, segHeight);
+
+      // 添加水印
+      if (state.watermark && state.wmText) {
+        drawWatermark(segCtx, width, segHeight, state.wmText, state.wmPosition);
+      }
+
+      const format = state.quality ? 'image/png' : 'image/jpeg';
+      const quality = state.quality ? 1.0 : 0.92;
+      const blob = await new Promise(resolve => segCanvas.toBlob(resolve, format, quality));
+
+      const ext = state.quality ? 'png' : 'jpg';
+      const filename = state.number
+        ? `长图_${String(i+1).padStart(2,'0')}_of_${String(n).padStart(2,'0')}.${ext}`
+        : `长图_${i+1}.${ext}`;
+
+      state.results.push({
+        filename,
+        blob,
+        width,
+        height: segHeight,
+        dataUrl: segCanvas.toDataURL(format, quality)
+      });
+    }
+
+    updateProgress(95, '渲染预览...');
+    renderResults();
+    if (typeof updateNamePreview === 'function') updateNamePreview();
+    updateProgress(100, '完成');
+  }
+
+  function renderResults() {
+    const grid = document.getElementById('resultGrid');
+    grid.innerHTML = '';
+    state.results.forEach((r, i) => {
+      const item = document.createElement('div');
+      item.className = 'result-item';
+      item.innerHTML = `
+        <button class="single-dl" data-idx="${i}" title="单独下载此段">↓</button>
+        <img src="${r.dataUrl}" alt="${r.filename}">
+        <div class="result-item-label">第 ${i+1} 段</div>
+        <div class="result-item-size">${r.width}×${r.height}</div>
+      `;
+      item.querySelector('.single-dl').addEventListener('click', (e) => {
+        e.stopPropagation();
+        downloadSingle(parseInt(e.target.dataset.idx));
+      });
+      grid.appendChild(item);
+    });
+
+    const totalSize = state.results.reduce((s,r) => s + r.blob.size, 0);
+    const sizeStr = totalSize > 1024*1024
+      ? (totalSize/1024/1024).toFixed(1) + ' MB'
+      : (totalSize/1024).toFixed(0) + ' KB';
+
+    let tipText = `共 ${state.results.length} 张 · 总大小 ${sizeStr}`;
+    if (state.smart) tipText += ' · 智能检测';
+    if (state.overlap) tipText += ' · 含10%重叠';
+    if (state.quality) tipText += ' · PNG无损';
+    document.getElementById('resultTip').textContent = tipText;
+
+    document.getElementById('resultWrap').classList.add('show');
+  }
+
+  // === 下载 ZIP ===
+  document.getElementById('downloadBtn').addEventListener('click', async () => {
+    if (state.results.length === 0) return;
+    const btn = document.getElementById('downloadBtn');
+    btn.disabled = true;
+    btn.textContent = '打包中...';
+
+    try {
+      // 读取命名前缀
+      const prefix = (document.getElementById('namePrefix').value || '').trim() || '长图分段';
+      const renameForZip = (fn) => prefix !== '长图分段' ? fn.replace(/^长图_/, `${prefix}_`) : fn;
+
+      const zip = new JSZip();
+      for (const r of state.results) {
+        zip.file(renameForZip(r.filename), r.blob);
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+
+      // 生成文件名
+      const now = new Date();
+      const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+      const actualN = state.results.length || state.segments;
+      const zipName = `${prefix}_${actualN}份_${ts}.zip`;
+
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = zipName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showToast('ZIP 已下载');
+    } catch (err) {
+      console.error(err);
+      showToast('打包失败: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '下载 ZIP 压缩包';
+    }
+  });
+
+  // === 继续切下一张 ===
+  // 清空图片/切点/结果,保留所有参数设置
+  document.getElementById('continueBtn').addEventListener('click', () => {
+    resetForNext();
+  });
+
+  function resetForNext() {
+    // 清空当前图片相关状态(保留 segments/mode/smart/overlap/quality/number/watermark/wmText/wmPosition/wmStyle/wmOpacity)
+    state.file = null;
+    state.img = null;
+    state.innerCuts = [];
+    state.imageData = null;
+    state.results = [];
+
+    // 重置 UI
+    document.getElementById('fileInput').value = '';  // 允许再次选择同一文件
+    document.getElementById('previewImg').src = '';
+    document.getElementById('previewInfo').innerHTML = '';
+    document.getElementById('previewWrap').classList.remove('show');
+    document.getElementById('previewCanvasInner').innerHTML = '';
+    document.getElementById('previewEditWrap').classList.remove('show');
+    document.getElementById('resultGrid').innerHTML = '';
+    document.getElementById('resultWrap').classList.remove('show');
+    document.getElementById('progressWrap').classList.remove('show');
+    updateProgress(0, '');
+
+    // 重置主按钮
+    const processBtn = document.getElementById('processBtn');
+    processBtn.disabled = true;
+    processBtn.textContent = '请先上传长图';
+
+    // 滚动到顶部上传区
+    document.getElementById('dropZone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    showToast('已重置 · 参数已保留');
+  }
+
+  // === 工具函数 ===
+  function updateProgress(pct, text) {
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = text;
+  }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function drawWatermark(ctx, w, h, text, position) {
+    const fontSize = Math.max(18, Math.min(48, Math.round(w / 40)));
+    const padding = Math.round(fontSize * 0.8);
+    const style = state.wmStyle;
+    const opacity = state.wmOpacity;
+
+    ctx.save();
+    ctx.font = `600 ${fontSize}px "PingFang SC", "Noto Serif CJK SC", sans-serif`;
+    ctx.textBaseline = 'alphabetic';
+
+    if (position === 'tile') {
+      // === 斜向铺满模式 ===
+      drawTiledWatermark(ctx, w, h, text, fontSize, style, opacity);
+    } else {
+      // === 单点模式:计算文字位置 ===
+      const metrics = ctx.measureText(text);
+      const textW = metrics.width;
+      const textH = fontSize;
+
+      let x, y;
+      if (position === 'bottom-right') {
+        x = w - textW - padding;
+        y = h - padding;
+      } else if (position === 'bottom-left') {
+        x = padding;
+        y = h - padding;
+      } else if (position === 'top-right') {
+        x = w - textW - padding;
+        y = padding + textH;
+      } else if (position === 'top-left') {
+        x = padding;
+        y = padding + textH;
+      } else if (position === 'center') {
+        x = (w - textW) / 2;
+        y = (h + textH) / 2 - fontSize * 0.2;
+      }
+
+      drawSingleWatermark(ctx, x, y, text, textW, textH, fontSize, style, opacity);
+    }
+
+    ctx.restore();
+  }
+
+  function drawSingleWatermark(ctx, x, y, text, textW, textH, fontSize, style, opacity) {
+    if (style === 'solid') {
+      // 实印:带藏青金底色
+      const bgPadX = fontSize * 0.5;
+      const bgPadY = fontSize * 0.3;
+      const bgX = x - bgPadX;
+      const bgY = y - textH - bgPadY + fontSize * 0.15;
+      const bgW = textW + bgPadX * 2;
+      const bgH = textH + bgPadY * 2;
+      const radius = fontSize * 0.3;
+
+      ctx.fillStyle = `rgba(11, 24, 41, ${opacity * 0.95})`;
+      ctx.beginPath();
+      ctx.moveTo(bgX + radius, bgY);
+      ctx.lineTo(bgX + bgW - radius, bgY);
+      ctx.quadraticCurveTo(bgX + bgW, bgY, bgX + bgW, bgY + radius);
+      ctx.lineTo(bgX + bgW, bgY + bgH - radius);
+      ctx.quadraticCurveTo(bgX + bgW, bgY + bgH, bgX + bgW - radius, bgY + bgH);
+      ctx.lineTo(bgX + radius, bgY + bgH);
+      ctx.quadraticCurveTo(bgX, bgY + bgH, bgX, bgY + bgH - radius);
+      ctx.lineTo(bgX, bgY + radius);
+      ctx.quadraticCurveTo(bgX, bgY, bgX + radius, bgY);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = `rgba(221, 182, 85, ${opacity})`;
+      ctx.fillText(text, x, y);
+    } else {
+      // 虚印:纯文字,带描边增加可读性
+      ctx.lineWidth = Math.max(2, fontSize * 0.08);
+      ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.5})`;
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      ctx.fillText(text, x, y);
+    }
+  }
+
+  function drawTiledWatermark(ctx, w, h, text, fontSize, style, opacity) {
+    // 斜向铺满:-30度,文字按网格分布
+    const angle = -Math.PI / 6;  // -30度(左下到右上的斜向)
+    const metrics = ctx.measureText(text);
+    const textW = metrics.width;
+
+    // 网格间距:水平间距约文字宽的2倍,垂直间距约文字高的10倍
+    // 这样铺满后不会太密,又能保证无论怎么裁剪都带水印
+    const stepX = textW + fontSize * 4;
+    const stepY = fontSize * 10;
+
+    // 为确保旋转后完全覆盖,扩展绘制范围
+    const diagonal = Math.sqrt(w * w + h * h);
+    const cols = Math.ceil(diagonal / stepX) + 2;
+    const rows = Math.ceil(diagonal / stepY) + 2;
+
+    ctx.save();
+    // 以中心为旋转点
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(angle);
+
+    for (let row = -rows/2; row < rows/2; row++) {
+      for (let col = -cols/2; col < cols/2; col++) {
+        // 错位排列,第二行偏移半个网格
+        const offsetX = (row % 2 === 0) ? 0 : stepX / 2;
+        const x = col * stepX + offsetX - textW / 2;
+        const y = row * stepY;
+
+        if (style === 'solid') {
+          // 实印小块
+          const bgPadX = fontSize * 0.4;
+          const bgPadY = fontSize * 0.25;
+          ctx.fillStyle = `rgba(11, 24, 41, ${opacity * 0.7})`;
+          const bgX = x - bgPadX;
+          const bgY = y - fontSize + fontSize * 0.15 - bgPadY;
+          const bgW = textW + bgPadX * 2;
+          const bgH = fontSize + bgPadY * 2;
+          const r = fontSize * 0.25;
+          ctx.beginPath();
+          ctx.moveTo(bgX + r, bgY);
+          ctx.lineTo(bgX + bgW - r, bgY);
+          ctx.quadraticCurveTo(bgX + bgW, bgY, bgX + bgW, bgY + r);
+          ctx.lineTo(bgX + bgW, bgY + bgH - r);
+          ctx.quadraticCurveTo(bgX + bgW, bgY + bgH, bgX + bgW - r, bgY + bgH);
+          ctx.lineTo(bgX + r, bgY + bgH);
+          ctx.quadraticCurveTo(bgX, bgY + bgH, bgX, bgY + bgH - r);
+          ctx.lineTo(bgX, bgY + r);
+          ctx.quadraticCurveTo(bgX, bgY, bgX + r, bgY);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = `rgba(221, 182, 85, ${opacity})`;
+          ctx.fillText(text, x, y);
+        } else {
+          // 虚印
+          ctx.lineWidth = Math.max(1.5, fontSize * 0.06);
+          ctx.strokeStyle = `rgba(0, 0, 0, ${opacity * 0.4})`;
+          ctx.strokeText(text, x, y);
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.85})`;
+          ctx.fillText(text, x, y);
+        }
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // 单独下载某一段
+  function downloadSingle(idx) {
+    const r = state.results[idx];
+    if (!r) return;
+    const url = URL.createObjectURL(r.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const prefix = (document.getElementById('namePrefix').value || '').trim() || '长图分段';
+    a.download = prefix !== '长图分段' ? r.filename.replace(/^长图_/, `${prefix}_`) : r.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('已下载 第' + (idx+1) + '段');
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // ==================================================================
+  // ===                     合成模式 (Merge)                       ===
+  // ==================================================================
+  const mergeState = {
+    images: [],           // [{id, file, img, name, width, height, thumbDataUrl}]
+    direction: 'vertical', // 'vertical' | 'horizontal'
+    baseWidth: 'min',     // 'min' | 'max' | 'first' (在横拼时分别对应 最矮/最高/第一张)
+    gap: 0,               // 0 | 10 | 20 | 40
+    gapColor: '#ffffff',
+    quality: true,
+    watermark: false,
+    wmText: '',
+    wmPosition: 'bottom-right',
+    wmStyle: 'solid',
+    wmOpacity: 0.7,
+    result: null          // {blob, dataUrl, width, height, format}
+  };
+
+  // === 主 Tab 切换 ===
+  document.querySelectorAll('.main-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const mode = tab.dataset.mode;
+      document.getElementById('splitMode').style.display  = mode === 'split' ? '' : 'none';
+      document.getElementById('mergeMode').style.display  = mode === 'merge' ? '' : 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // === 合成模式:上传 ===
+  const mergeDropZone  = document.getElementById('mergeDropZone');
+  const mergeFileInput = document.getElementById('mergeFileInput');
+  mergeDropZone.addEventListener('click', () => mergeFileInput.click());
+  mergeFileInput.addEventListener('change', e => {
+    if (e.target.files && e.target.files.length) handleMergeFiles(e.target.files);
+    e.target.value = '';   // 允许再次选同一文件
+  });
+  ['dragover', 'dragenter'].forEach(ev => {
+    mergeDropZone.addEventListener(ev, e => {
+      e.preventDefault();
+      mergeDropZone.classList.add('dragover');
+    });
+  });
+  ['dragleave'].forEach(ev => {
+    mergeDropZone.addEventListener(ev, e => {
+      e.preventDefault();
+      mergeDropZone.classList.remove('dragover');
+    });
+  });
+  mergeDropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    mergeDropZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files && files.length) handleMergeFiles(files);
+  });
+
+  async function handleMergeFiles(fileList) {
+    const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+    if (!files.length) {
+      showToast('请选择图片文件');
+      return;
+    }
+
+    // 显示加载提示
+    showToast(`正在加载 ${files.length} 张图...`);
+
+    for (const file of files) {
+      try {
+        const img = await loadImageFromFile(file);
+        const thumbDataUrl = await makeThumb(img, 200);
+        mergeState.images.push({
+          id: 'img_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+          file,
+          img,
+          name: file.name,
+          width: img.width,
+          height: img.height,
+          thumbDataUrl
+        });
+      } catch (err) {
+        console.error('加载失败:', file.name, err);
+        showToast('无法加载: ' + file.name);
+      }
+    }
+    renderMergeList();
+  }
+
+  function loadImageFromFile(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('图片解码失败'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('读取文件失败'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function makeThumb(img, maxDim) {
+    return new Promise(resolve => {
+      const canvas = document.createElement('canvas');
+      const scale  = Math.min(maxDim / img.width, maxDim / img.height, 1);
+      canvas.width  = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.6));
+    });
+  }
+
+  // === 渲染图片列表 ===
+  function renderMergeList() {
+    const list       = document.getElementById('mergeList');
+    const wrap       = document.getElementById('mergeListWrap');
+    const optWrap    = document.getElementById('mergeOptionsWrap');
+    const advWrap    = document.getElementById('mergeAdvancedWrap');
+    const badge      = document.getElementById('mergeCountBadge');
+    const processBtn = document.getElementById('mergeProcessBtn');
+
+    list.innerHTML = '';
+
+    if (mergeState.images.length === 0) {
+      wrap.style.display    = 'none';
+      optWrap.style.display = 'none';
+      advWrap.style.display = 'none';
+      processBtn.disabled = true;
+      processBtn.textContent = '请先添加至少 2 张图片';
+      return;
+    }
+
+    wrap.style.display    = '';
+    optWrap.style.display = '';
+    advWrap.style.display = '';
+    badge.textContent = `${mergeState.images.length} 张`;
+
+    mergeState.images.forEach((item, idx) => {
+      const el = document.createElement('div');
+      el.className = 'merge-item';
+      el.draggable = true;
+      el.dataset.idx = idx;
+      el.innerHTML = `
+        <div class="merge-item-order">${idx + 1}</div>
+        <img class="merge-item-thumb" src="${item.thumbDataUrl}" alt="">
+        <div class="merge-item-info">
+          <div class="merge-item-size">${item.width} × ${item.height}</div>
+          <div class="merge-item-name" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
+        </div>
+        <div class="merge-item-actions">
+          <button class="merge-item-btn" data-action="up"   data-idx="${idx}" ${idx === 0 ? 'disabled' : ''} title="上移">↑</button>
+          <button class="merge-item-btn" data-action="down" data-idx="${idx}" ${idx === mergeState.images.length - 1 ? 'disabled' : ''} title="下移">↓</button>
+          <button class="merge-item-btn merge-item-btn-del" data-action="del" data-idx="${idx}" title="删除">×</button>
+        </div>
+      `;
+
+      // 按钮事件
+      el.querySelectorAll('.merge-item-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const a = e.currentTarget.dataset.action;
+          const i = parseInt(e.currentTarget.dataset.idx);
+          if (a === 'up' && i > 0) {
+            [mergeState.images[i - 1], mergeState.images[i]] = [mergeState.images[i], mergeState.images[i - 1]];
+            renderMergeList();
+          } else if (a === 'down' && i < mergeState.images.length - 1) {
+            [mergeState.images[i + 1], mergeState.images[i]] = [mergeState.images[i], mergeState.images[i + 1]];
+            renderMergeList();
+          } else if (a === 'del') {
+            mergeState.images.splice(i, 1);
+            renderMergeList();
+            showToast('已删除');
+          }
+        });
+      });
+
+      // 桌面端原生拖拽排序
+      el.addEventListener('dragstart', e => {
+        // 拖拽时排除按钮区
+        if (e.target.closest('.merge-item-btn')) { e.preventDefault(); return; }
+        e.dataTransfer.setData('text/plain', String(idx));
+        e.dataTransfer.effectAllowed = 'move';
+        el.classList.add('dragging');
+      });
+      el.addEventListener('dragend', () => el.classList.remove('dragging'));
+      el.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        el.classList.add('drag-over');
+      });
+      el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+      el.addEventListener('drop', e => {
+        e.preventDefault();
+        el.classList.remove('drag-over');
+        const srcIdx = parseInt(e.dataTransfer.getData('text/plain'));
+        const tgtIdx = parseInt(el.dataset.idx);
+        if (isNaN(srcIdx) || srcIdx === tgtIdx) return;
+        const moved = mergeState.images.splice(srcIdx, 1)[0];
+        mergeState.images.splice(tgtIdx, 0, moved);
+        renderMergeList();
+      });
+
+      list.appendChild(el);
+    });
+
+    // 更新主按钮
+    updateMergeProcessBtn();
+  }
+
+  function updateMergeProcessBtn() {
+    const btn = document.getElementById('mergeProcessBtn');
+    const n   = mergeState.images.length;
+    const dir = mergeState.direction === 'horizontal' ? '左右' : '上下';
+    if (n >= 2) {
+      btn.disabled = false;
+      btn.textContent = `开始${dir}合成 ${n} 张图`;
+    } else {
+      btn.disabled = true;
+      btn.textContent = n === 0 ? '请先添加至少 2 张图片' : '至少需要 2 张图片';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // === 列表操作按钮 ===
+  document.getElementById('mergeAddMoreBtn').addEventListener('click', () => mergeFileInput.click());
+  document.getElementById('mergeReverseBtn').addEventListener('click', () => {
+    if (mergeState.images.length < 2) return;
+    mergeState.images.reverse();
+    renderMergeList();
+    showToast('顺序已反转');
+  });
+  document.getElementById('mergeClearBtn').addEventListener('click', () => {
+    if (!mergeState.images.length) return;
+    mergeState.images = [];
+    mergeState.result = null;
+    renderMergeList();
+    document.getElementById('mergeResultWrap').classList.remove('show');
+    showToast('已清空');
+  });
+
+  // === 合成选项(option-btn 组) ===
+  document.querySelectorAll('[data-mergefield]').forEach(group => {
+    const field = group.dataset.mergefield;
+    group.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const v = btn.dataset.value;
+        mergeState[field] = (field === 'gap') ? parseInt(v) : v;
+
+        if (field === 'direction') {
+          applyDirectionUI();
+        }
+        if (field === 'baseWidth') {
+          updateBaseDesc();
+        }
+        if (field === 'gap') {
+          const showColor = parseInt(v) > 0;
+          document.getElementById('gapColorLabel').style.display = showColor ? '' : 'none';
+          document.getElementById('gapColorGroup').style.display = showColor ? '' : 'none';
+        }
+      });
+    });
+  });
+
+  // 方向切换时:改基准按钮文字、改基准标签、改方向说明、改"继续合成"小字、刷新基准说明
+  function applyDirectionUI() {
+    const isH = mergeState.direction === 'horizontal';
+    // 改基准按钮显示文字
+    document.querySelectorAll('[data-mergefield="baseWidth"] .option-btn').forEach(b => {
+      const lv = b.dataset.labelV, lh = b.dataset.labelH;
+      if (lv && lh) b.textContent = isH ? lh : lv;
+    });
+    // 改基准标签
+    document.getElementById('baseLabel').innerHTML = isH
+      ? '基准高度 <span style="color:rgba(190,165,100,0.55);font-weight:400">(不同高度如何处理)</span>'
+      : '基准宽度 <span style="color:rgba(190,165,100,0.55);font-weight:400">(不同宽度如何处理)</span>';
+    // 改方向说明
+    document.getElementById('directionDesc').textContent = isH
+      ? '左右拼:常用于前后对比、聊天记录 vs 订单并列、举证多张截图。'
+      : '上下拼:常用于商品详情长图、聊天记录连续截图。';
+    // 刷新基准说明(因为文案和方向相关)
+    updateBaseDesc();
+    // 刷新主按钮文字
+    updateMergeProcessBtn();
+  }
+
+  function updateBaseDesc() {
+    const isH = mergeState.direction === 'horizontal';
+    const v   = mergeState.baseWidth;
+    const descs = isH ? {
+      min:   '以最矮为准:高图按比例缩小,不放大矮图,画质最稳(推荐)。',
+      max:   '以最高为准:矮图放大到最高高度,画质最高但矮图可能略模糊。',
+      first: '以第一张为准:所有图按第一张的高度缩放。'
+    } : {
+      min:   '以最窄为准:宽图按比例缩小,不放大窄图,画质最稳(推荐)。',
+      max:   '以最宽为准:窄图放大到最宽宽度,画质最高但窄图可能略模糊。',
+      first: '以第一张为准:所有图按第一张的宽度缩放。'
+    };
+    document.getElementById('baseWidthDesc').textContent = descs[v];
+  }
+
+  // === 合成模式:清晰度开关 ===
+  document.getElementById('mergeQualitySwitch').addEventListener('click', () => {
+    mergeState.quality = !mergeState.quality;
+    document.getElementById('mergeQualitySwitch').classList.toggle('on', mergeState.quality);
+    updateMergeNamePreview();
+  });
+
+  // === 合成模式:水印开关 + 水印参数 ===
+  document.getElementById('mergeWatermarkSwitch').addEventListener('click', () => {
+    mergeState.watermark = !mergeState.watermark;
+    document.getElementById('mergeWatermarkSwitch').classList.toggle('on', mergeState.watermark);
+    document.getElementById('mergeWatermarkInputWrap').classList.toggle('show', mergeState.watermark);
+  });
+  document.getElementById('mergeWatermarkText').addEventListener('input', e => {
+    mergeState.wmText = e.target.value.trim();
+  });
+  document.getElementById('mergeWmOpacitySlider').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    mergeState.wmOpacity = v / 100;
+    document.getElementById('mergeWmOpacityValue').textContent = v + '%';
+  });
+
+  // === 开始合成 ===
+  document.getElementById('mergeProcessBtn').addEventListener('click', async () => {
+    if (mergeState.images.length < 2) return;
+    const btn = document.getElementById('mergeProcessBtn');
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+    document.getElementById('mergeProgressWrap').classList.add('show');
+    document.getElementById('mergeResultWrap').classList.remove('show');
+
+    try {
+      await executeMerge();
+      showToast('合成完成!');
+      document.getElementById('mergeResultWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.error(err);
+      showToast('合成失败: ' + err.message);
+    } finally {
+      updateMergeProcessBtn();
+      document.getElementById('mergeProgressWrap').classList.remove('show');
+    }
+  });
+
+  async function executeMerge() {
+    const imgs = mergeState.images;
+    if (imgs.length < 2) throw new Error('至少需要 2 张图片');
+
+    const isH = mergeState.direction === 'horizontal';
+
+    // 1) 计算基准尺寸:上下拼 = 基准宽度,左右拼 = 基准高度
+    const sides = imgs.map(i => isH ? i.height : i.width);  // 待对齐的那条边
+    let baseSide;
+    if      (mergeState.baseWidth === 'min')   baseSide = Math.min(...sides);
+    else if (mergeState.baseWidth === 'max')   baseSide = Math.max(...sides);
+    else                                        baseSide = sides[0];
+
+    // 2) 每张缩放后尺寸:按基准边等比缩放
+    const scaled = imgs.map(item => {
+      if (isH) {
+        const scale = baseSide / item.height;
+        return { img: item.img, drawW: Math.max(1, Math.round(item.width * scale)), drawH: baseSide };
+      } else {
+        const scale = baseSide / item.width;
+        return { img: item.img, drawW: baseSide, drawH: Math.max(1, Math.round(item.height * scale)) };
+      }
+    });
+
+    // 3) 计算画布总尺寸
+    const gap = mergeState.gap;
+    let canvasW, canvasH;
+    if (isH) {
+      canvasH = baseSide;
+      canvasW = scaled.reduce((sum, s) => sum + s.drawW, 0) + gap * (imgs.length - 1);
+    } else {
+      canvasW = baseSide;
+      canvasH = scaled.reduce((sum, s) => sum + s.drawH, 0) + gap * (imgs.length - 1);
+    }
+
+    // 4) Canvas 尺寸上限检查(主流浏览器单 canvas 边长上限约 32767px)
+    const longSide = Math.max(canvasW, canvasH);
+    if (longSide > 32000) {
+      const dirWord = isH ? '宽度' : '高度';
+      throw new Error(`合成后${dirWord} ${longSide}px 超出浏览器上限(32767),请减少图片数量或换基准`);
+    }
+    if (longSide > 16000) {
+      console.warn(`合成后长边 ${longSide}px 较大,移动端可能渲染失败`);
+    }
+
+    updateMergeProgress(5, '创建画布...');
+    await sleep(10);
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = canvasW;
+    canvas.height = canvasH;
+    const ctx = canvas.getContext('2d');
+
+    // 5) 背景(仅在有间隔时填充)
+    if (gap > 0) {
+      ctx.fillStyle = mergeState.gapColor;
+      ctx.fillRect(0, 0, canvasW, canvasH);
+    }
+
+    // 6) 逐张绘制
+    let cursor = 0;
+    for (let i = 0; i < scaled.length; i++) {
+      updateMergeProgress(10 + (i / scaled.length) * 75, `绘制第 ${i + 1}/${scaled.length} 张...`);
+      await sleep(10);
+      if (isH) {
+        ctx.drawImage(scaled[i].img, cursor, 0, scaled[i].drawW, scaled[i].drawH);
+        cursor += scaled[i].drawW + gap;
+      } else {
+        ctx.drawImage(scaled[i].img, 0, cursor, scaled[i].drawW, scaled[i].drawH);
+        cursor += scaled[i].drawH + gap;
+      }
+    }
+
+    // 7) 水印(复用 drawWatermark,通过临时借用 state.wm* 字段)
+    if (mergeState.watermark && mergeState.wmText) {
+      updateMergeProgress(88, '绘制水印...');
+      await sleep(10);
+      const saved = {
+        wmText: state.wmText, wmPosition: state.wmPosition,
+        wmStyle: state.wmStyle, wmOpacity: state.wmOpacity
+      };
+      state.wmText     = mergeState.wmText;
+      state.wmPosition = mergeState.wmPosition;
+      state.wmStyle    = mergeState.wmStyle;
+      state.wmOpacity  = mergeState.wmOpacity;
+      try {
+        drawWatermark(ctx, canvasW, canvasH, mergeState.wmText, mergeState.wmPosition);
+      } finally {
+        Object.assign(state, saved);   // 还原,避免污染切分模式
+      }
+    }
+
+    // 8) 导出
+    updateMergeProgress(92, '导出图片...');
+    await sleep(10);
+
+    const format  = mergeState.quality ? 'image/png' : 'image/jpeg';
+    const quality = mergeState.quality ? 1.0 : 0.92;
+    const blob    = await new Promise(resolve => canvas.toBlob(resolve, format, quality));
+    if (!blob) throw new Error('导出失败,可能尺寸过大');
+
+    mergeState.result = {
+      blob,
+      dataUrl: canvas.toDataURL(format, quality),
+      width:   canvasW,
+      height:  canvasH,
+      format:  mergeState.quality ? 'png' : 'jpg',
+      direction: mergeState.direction
+    };
+
+    updateMergeProgress(98, '渲染预览...');
+    renderMergeResult();
+    updateMergeProgress(100, '完成');
+  }
+
+  function updateMergeProgress(pct, text) {
+    document.getElementById('mergeProgressFill').style.width = pct + '%';
+    document.getElementById('mergeProgressText').textContent = text;
+  }
+
+  function renderMergeResult() {
+    const r = mergeState.result;
+    if (!r) return;
+    const preview = document.getElementById('mergeResultPreview');
+    preview.innerHTML = `<img src="${r.dataUrl}" alt="合成结果">`;
+    // 横拼时用不同的预览样式(限高度,不限宽度)
+    preview.classList.toggle('horizontal', r.direction === 'horizontal');
+
+    const sizeStr = r.blob.size > 1024 * 1024
+      ? (r.blob.size / 1024 / 1024).toFixed(1) + ' MB'
+      : (r.blob.size / 1024).toFixed(0) + ' KB';
+
+    const dirTag = r.direction === 'horizontal' ? '↔ 左右拼' : '↕ 上下拼';
+    document.getElementById('mergeResultInfo').innerHTML =
+      `${dirTag} · 合成后尺寸 <strong>${r.width} × ${r.height}</strong> px · ${sizeStr} · 由 <strong>${mergeState.images.length}</strong> 张图合成 · ${r.format.toUpperCase()}`;
+
+    document.getElementById('mergeResultWrap').classList.add('show');
+    updateMergeNamePreview();
+  }
+
+  // === 合成:命名预览 ===
+  function updateMergeNamePreview() {
+    const input   = document.getElementById('mergeNamePrefix');
+    const preview = document.getElementById('mergeNamePrefixPreview');
+    if (!input || !preview) return;
+    const prefix = (input.value || '').trim() || '长图合成';
+    const now = new Date();
+    const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    const n = mergeState.images.length;
+    if (n === 0) { preview.innerHTML = ''; return; }
+    const ext = mergeState.quality ? 'png' : 'jpg';
+    preview.innerHTML = `📁 <b>${prefix}_${n}张_${ts}.${ext}</b>`;
+  }
+  document.getElementById('mergeNamePrefix').addEventListener('input', updateMergeNamePreview);
+
+  // === 合成:下载 ===
+  document.getElementById('mergeDownloadBtn').addEventListener('click', () => {
+    if (!mergeState.result) return;
+    const r = mergeState.result;
+    const btn = document.getElementById('mergeDownloadBtn');
+    btn.disabled = true;
+    const origText = btn.textContent;
+    btn.textContent = '下载中...';
+
+    try {
+      const prefix = (document.getElementById('mergeNamePrefix').value || '').trim() || '长图合成';
+      const now = new Date();
+      const ts  = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+      const filename = `${prefix}_${mergeState.images.length}张_${ts}.${r.format}`;
+
+      const url = URL.createObjectURL(r.blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      showToast('已下载');
+    } catch (err) {
+      console.error(err);
+      showToast('下载失败: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = origText;
+    }
+  });
+
+  // === 合成:继续合成下一组 ===
+  document.getElementById('mergeContinueBtn').addEventListener('click', () => {
+    // 清空图片和结果,保留所有选项参数(baseWidth/gap/gapColor/quality/水印设置/命名前缀)
+    mergeState.images = [];
+    mergeState.result = null;
+    document.getElementById('mergeFileInput').value = '';
+    renderMergeList();
+    document.getElementById('mergeResultWrap').classList.remove('show');
+    document.getElementById('mergeProgressWrap').classList.remove('show');
+    updateMergeProgress(0, '');
+    document.getElementById('mergeDropZone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('已重置 · 参数已保留');
+  });
+
+  // 初始化:命名预览
+  setTimeout(updateMergeNamePreview, 100);
+
+  // ==================================================================
+  // ===                     高清模式 (Enhance)                     ===
+  // ==================================================================
+  const enhanceState = {
+    file: null,
+    img: null,
+    sourceBlob: null,     // 来自合成模式时保存的 blob,避免重新编码
+    sourceName: '',
+    preset: 'photo',
+    scale: 1,
+    sharpen: 1,
+    contrast: 15,
+    saturation: 20,
+    quality: true,
+    result: null          // {blob, dataUrl, width, height, format}
+  };
+
+  // === 主 Tab 切换到高清(扩展原来的逻辑) ===
+  // 原 main-tab 监听器已经处理了 split/merge,现在统一扩展处理 enhance
+  document.querySelectorAll('.main-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const mode = tab.dataset.mode;
+      document.getElementById('enhanceMode').style.display = mode === 'enhance' ? '' : 'none';
+    });
+  });
+
+  // === 高清模式:上传 ===
+  const enhanceDropZone  = document.getElementById('enhanceDropZone');
+  const enhanceFileInput = document.getElementById('enhanceFileInput');
+  enhanceDropZone.addEventListener('click', () => enhanceFileInput.click());
+  enhanceFileInput.addEventListener('change', e => {
+    if (e.target.files && e.target.files[0]) handleEnhanceFile(e.target.files[0]);
+    e.target.value = '';
+  });
+  ['dragover','dragenter'].forEach(ev => {
+    enhanceDropZone.addEventListener(ev, e => {
+      e.preventDefault(); enhanceDropZone.classList.add('dragover');
+    });
+  });
+  ['dragleave'].forEach(ev => {
+    enhanceDropZone.addEventListener(ev, e => {
+      e.preventDefault(); enhanceDropZone.classList.remove('dragover');
+    });
+  });
+  enhanceDropZone.addEventListener('drop', e => {
+    e.preventDefault(); enhanceDropZone.classList.remove('dragover');
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) handleEnhanceFile(f);
+  });
+
+  async function handleEnhanceFile(file) {
+    try {
+      enhanceState.file = file;
+      enhanceState.sourceBlob = file;
+      enhanceState.sourceName = file.name || '高清图';
+      const img = await loadImageFromFile(file);
+      enhanceState.img = img;
+
+      document.getElementById('enhancePreviewImg').src = img.src;
+      const sizeKB = (file.size / 1024).toFixed(0);
+      const sizeStr = sizeKB > 1024 ? (sizeKB/1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+      document.getElementById('enhancePreviewInfo').innerHTML =
+        `<strong>${img.width} × ${img.height}</strong> px · ${sizeStr} · ${file.name || ''}`;
+      document.getElementById('enhancePreviewWrap').classList.add('show');
+      document.getElementById('enhanceOptionsWrap').style.display = '';
+      document.getElementById('enhanceResultWrap').classList.remove('show');
+
+      updateEnhanceProcessBtn();
+      updateEnhSizeHint();
+    } catch (err) {
+      console.error(err);
+      showToast('加载失败: ' + err.message);
+    }
+  }
+
+  function updateEnhanceProcessBtn() {
+    const btn = document.getElementById('enhanceProcessBtn');
+    if (!enhanceState.img) {
+      btn.disabled = true;
+      btn.textContent = '请先上传图片';
+      return;
+    }
+    btn.disabled = false;
+    const s = enhanceState.scale;
+    btn.textContent = s === 1 ? '开始高清化(仅增强)' : `开始高清化 ${s}× 放大`;
+  }
+
+  // === 场景预设:点击后自动填各参数 ===
+  const presetConfig = {
+    text:    { scale: 2, sharpen: 3, contrast: 20, saturation: 0,  desc: '文字截图:2× 放大 + 强锐化,让文字边缘清晰锐利,不加饱和。' },
+    photo:   { scale: 1, sharpen: 1, contrast: 15, saturation: 20, desc: '商品图/照片:提升对比与饱和度,让颜色更鲜活,轻度锐化(推荐)。' },
+    general: { scale: 1, sharpen: 2, contrast: 10, saturation: 10, desc: '通用增强:中等锐化 + 轻度对比饱和,适合大多数图片。' },
+    deblur:  { scale: 2, sharpen: 3, contrast: 25, saturation: 10, desc: '去模糊:2× + 强锐化 + 强对比,最大化还原模糊图(注意:无法凭空创造细节)。' },
+    custom:  { desc: '自定义:自己调下面的参数。' }
+  };
+
+  // === 高清模式选项组(preset / scale / sharpen)===
+  document.querySelectorAll('[data-enhfield]').forEach(group => {
+    const field = group.dataset.enhfield;
+    group.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const v = btn.dataset.value;
+        if (field === 'preset') {
+          enhanceState.preset = v;
+          const cfg = presetConfig[v];
+          document.getElementById('presetDesc').textContent = cfg.desc;
+          if (v !== 'custom') {
+            applyPresetToUI(cfg);
+          }
+        } else if (field === 'scale') {
+          enhanceState.scale = parseInt(v);
+          updateEnhanceProcessBtn();
+          updateEnhSizeHint();
+          setPresetToCustomIfMismatch();
+        } else if (field === 'sharpen') {
+          enhanceState.sharpen = parseInt(v);
+          setPresetToCustomIfMismatch();
+        }
+      });
+    });
+  });
+
+  function applyPresetToUI(cfg) {
+    enhanceState.scale      = cfg.scale;
+    enhanceState.sharpen    = cfg.sharpen;
+    enhanceState.contrast   = cfg.contrast;
+    enhanceState.saturation = cfg.saturation;
+    // 同步按钮 active
+    selectOptionBtn('scale', String(cfg.scale));
+    selectOptionBtn('sharpen', String(cfg.sharpen));
+    // 同步滑块
+    const c = document.getElementById('enhContrastSlider');
+    const s = document.getElementById('enhSaturationSlider');
+    c.value = cfg.contrast;
+    s.value = cfg.saturation;
+    document.getElementById('enhContrastValue').textContent   = '+' + cfg.contrast + '%';
+    document.getElementById('enhSaturationValue').textContent = '+' + cfg.saturation + '%';
+    updateEnhanceProcessBtn();
+    updateEnhSizeHint();
+  }
+
+  function selectOptionBtn(field, value) {
+    const group = document.querySelector(`[data-enhfield="${field}"]`);
+    if (!group) return;
+    group.querySelectorAll('.option-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === value);
+    });
+  }
+
+  // 用户手动改参数时,预设自动切到自定义(不强制)
+  function setPresetToCustomIfMismatch() {
+    const cfg = presetConfig[enhanceState.preset];
+    if (!cfg || enhanceState.preset === 'custom') return;
+    if (cfg.scale !== enhanceState.scale ||
+        cfg.sharpen !== enhanceState.sharpen ||
+        cfg.contrast !== enhanceState.contrast ||
+        cfg.saturation !== enhanceState.saturation) {
+      enhanceState.preset = 'custom';
+      selectPresetBtn('custom');
+      document.getElementById('presetDesc').textContent = presetConfig.custom.desc;
+    }
+  }
+  function selectPresetBtn(value) {
+    const group = document.querySelector('[data-enhfield="preset"]');
+    if (!group) return;
+    group.querySelectorAll('.option-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === value);
+    });
+  }
+
+  // === 滑块 ===
+  document.getElementById('enhContrastSlider').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    enhanceState.contrast = v;
+    document.getElementById('enhContrastValue').textContent = '+' + v + '%';
+    setPresetToCustomIfMismatch();
+  });
+  document.getElementById('enhSaturationSlider').addEventListener('input', e => {
+    const v = parseInt(e.target.value);
+    enhanceState.saturation = v;
+    document.getElementById('enhSaturationValue').textContent = '+' + v + '%';
+    setPresetToCustomIfMismatch();
+  });
+
+  // === 清晰度开关 ===
+  document.getElementById('enhanceQualitySwitch').addEventListener('click', () => {
+    enhanceState.quality = !enhanceState.quality;
+    document.getElementById('enhanceQualitySwitch').classList.toggle('on', enhanceState.quality);
+  });
+
+  // === 显示预估输出尺寸 ===
+  function updateEnhSizeHint() {
+    const hint = document.getElementById('enhSizeHint');
+    if (!enhanceState.img) { hint.textContent = ''; return; }
+    const s = enhanceState.scale;
+    const w = enhanceState.img.width  * s;
+    const h = enhanceState.img.height * s;
+    // Canvas 单边上限警告
+    if (Math.max(w, h) > 32000) {
+      hint.innerHTML = `<span style="color:#e88a73">→ ${w} × ${h} px 超出浏览器上限!</span>`;
+    } else if (Math.max(w, h) > 16000) {
+      hint.innerHTML = `<span style="color:#e8b373">→ ${w} × ${h} px (较大,可能慢)</span>`;
+    } else {
+      hint.textContent = `→ ${w} × ${h} px`;
+    }
+  }
+
+  // === 开始处理 ===
+  document.getElementById('enhanceProcessBtn').addEventListener('click', async () => {
+    if (!enhanceState.img) return;
+    const btn = document.getElementById('enhanceProcessBtn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+    document.getElementById('enhanceProgressWrap').classList.add('show');
+    document.getElementById('enhanceResultWrap').classList.remove('show');
+
+    try {
+      await executeEnhance();
+      showToast('高清化完成!');
+      document.getElementById('enhanceResultWrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.error(err);
+      showToast('处理失败: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = origText;
+      document.getElementById('enhanceProgressWrap').classList.remove('show');
+    }
+  });
+
+  async function executeEnhance() {
+    const img = enhanceState.img;
+    const srcW = img.width;
+    const srcH = img.height;
+    const scale = enhanceState.scale;
+    const targetW = srcW * scale;
+    const targetH = srcH * scale;
+
+    if (Math.max(targetW, targetH) > 32000) {
+      throw new Error(`输出尺寸 ${targetW}×${targetH} 超出浏览器上限(32767),请降低放大倍数`);
+    }
+
+    updateEnhanceProgress(5, '创建画布...');
+    await sleep(15);
+
+    // === 1) 多步缩放(放大时画质更好)===
+    // 原理:一次性 1×→4× 会锯齿,分成 1×→2×→4× 每次 2x 插值,边缘更平滑
+    let currentCanvas = document.createElement('canvas');
+    currentCanvas.width = srcW;
+    currentCanvas.height = srcH;
+    currentCanvas.getContext('2d').drawImage(img, 0, 0);
+
+    if (scale > 1) {
+      let currentScale = 1;
+      let step = 0;
+      while (currentScale < scale) {
+        const nextScale = Math.min(currentScale * 2, scale);
+        const stepRatio = nextScale / currentScale;
+        updateEnhanceProgress(10 + step * 15, `放大中 ${Math.round(nextScale * 100)}%...`);
+        await sleep(15);
+
+        const nextW = Math.round(srcW * nextScale);
+        const nextH = Math.round(srcH * nextScale);
+        const nextCanvas = document.createElement('canvas');
+        nextCanvas.width = nextW;
+        nextCanvas.height = nextH;
+        const nctx = nextCanvas.getContext('2d');
+        // 开启高质量插值
+        nctx.imageSmoothingEnabled = true;
+        nctx.imageSmoothingQuality = 'high';
+        nctx.drawImage(currentCanvas, 0, 0, nextW, nextH);
+        currentCanvas = nextCanvas;
+        currentScale = nextScale;
+        step++;
+      }
+    }
+
+    // === 2) 像素级处理(对比度 / 饱和度 / 锐化)===
+    const ctx = currentCanvas.getContext('2d');
+    const finalW = currentCanvas.width;
+    const finalH = currentCanvas.height;
+
+    updateEnhanceProgress(50, '读取像素...');
+    await sleep(15);
+    let imageData = ctx.getImageData(0, 0, finalW, finalH);
+
+    // 对比度 & 饱和度
+    if (enhanceState.contrast > 0 || enhanceState.saturation > 0) {
+      updateEnhanceProgress(60, '调整对比 / 饱和度...');
+      await sleep(15);
+      applyContrastSaturation(imageData, enhanceState.contrast / 100, enhanceState.saturation / 100);
+    }
+
+    // 锐化(Unsharp Mask)
+    if (enhanceState.sharpen > 0) {
+      updateEnhanceProgress(75, '锐化边缘...');
+      await sleep(15);
+      // 强度:轻 0.3 / 中 0.6 / 强 1.0
+      const sharpenAmount = [0, 0.35, 0.65, 1.0][enhanceState.sharpen];
+      imageData = applyUnsharpMask(imageData, sharpenAmount);
+    }
+
+    ctx.putImageData(imageData, 0, 0);
+
+    // === 3) 导出 ===
+    updateEnhanceProgress(92, '导出图片...');
+    await sleep(15);
+    const format  = enhanceState.quality ? 'image/png' : 'image/jpeg';
+    const qval    = enhanceState.quality ? 1.0 : 0.95;
+    const blob    = await new Promise(res => currentCanvas.toBlob(res, format, qval));
+    if (!blob) throw new Error('导出失败');
+
+    enhanceState.result = {
+      blob,
+      dataUrl: currentCanvas.toDataURL(format, qval),
+      width:   finalW,
+      height:  finalH,
+      format:  enhanceState.quality ? 'png' : 'jpg'
+    };
+
+    updateEnhanceProgress(100, '完成');
+    renderEnhanceResult();
+  }
+
+  function updateEnhanceProgress(pct, text) {
+    document.getElementById('enhanceProgressFill').style.width = pct + '%';
+    document.getElementById('enhanceProgressText').textContent = text;
+  }
+
+  // === 对比度 + 饱和度(RGB 像素运算)===
+  // contrast / saturation 范围 0..1 (即 0%..100%,通常 0..0.5)
+  function applyContrastSaturation(imageData, contrast, saturation) {
+    const data = imageData.data;
+    // 对比度系数:公式 newValue = (value - 128) * factor + 128
+    // factor 在 0.. 2 之间,对比度 +X% 对应 factor = 1 + X (即 +20% 约 1.4,参考 Photoshop 的曲线调整)
+    const cFactor = 1 + contrast * 2;   // +20% → factor 1.4
+    const sFactor = 1 + saturation;      // +20% → 1.2
+    const len = data.length;
+
+    for (let i = 0; i < len; i += 4) {
+      let r = data[i], g = data[i+1], b = data[i+2];
+
+      // 对比度
+      if (contrast > 0) {
+        r = (r - 128) * cFactor + 128;
+        g = (g - 128) * cFactor + 128;
+        b = (b - 128) * cFactor + 128;
+      }
+
+      // 饱和度:(value - gray) * factor + gray,gray 是亮度(感知加权)
+      if (saturation > 0) {
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = (r - gray) * sFactor + gray;
+        g = (g - gray) * sFactor + gray;
+        b = (b - gray) * sFactor + gray;
+      }
+
+      data[i]   = Math.max(0, Math.min(255, r));
+      data[i+1] = Math.max(0, Math.min(255, g));
+      data[i+2] = Math.max(0, Math.min(255, b));
+    }
+  }
+
+  // === Unsharp Mask 锐化 ===
+  // 原理:原图 - 模糊版 = 边缘差异;原图 + 边缘差异 × amount = 锐化图
+  // 这里用 3×3 Box Blur 作为模糊(比高斯快,效果相当)
+  function applyUnsharpMask(imageData, amount) {
+    const w = imageData.width;
+    const h = imageData.height;
+    const src = imageData.data;
+    const len = src.length;
+
+    // 先做 3×3 Box Blur,得到模糊版
+    const blurred = new Uint8ClampedArray(len);
+
+    // 水平通道(每行内 3 点平均)
+    const tmp = new Uint8ClampedArray(len);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = (y * w + x) * 4;
+        for (let c = 0; c < 3; c++) {
+          let sum = 0, cnt = 0;
+          for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx;
+            if (xx >= 0 && xx < w) {
+              sum += src[(y * w + xx) * 4 + c];
+              cnt++;
+            }
+          }
+          tmp[idx + c] = sum / cnt;
+        }
+        tmp[idx + 3] = src[idx + 3];
+      }
+    }
+    // 垂直通道
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const idx = (y * w + x) * 4;
+        for (let c = 0; c < 3; c++) {
+          let sum = 0, cnt = 0;
+          for (let dy = -1; dy <= 1; dy++) {
+            const yy = y + dy;
+            if (yy >= 0 && yy < h) {
+              sum += tmp[(yy * w + x) * 4 + c];
+              cnt++;
+            }
+          }
+          blurred[idx + c] = sum / cnt;
+        }
+        blurred[idx + 3] = src[idx + 3];
+      }
+    }
+
+    // 锐化:output = src + (src - blurred) * amount
+    const out = new Uint8ClampedArray(len);
+    for (let i = 0; i < len; i += 4) {
+      for (let c = 0; c < 3; c++) {
+        const edge = src[i + c] - blurred[i + c];
+        out[i + c] = Math.max(0, Math.min(255, src[i + c] + edge * amount));
+      }
+      out[i + 3] = src[i + 3];
+    }
+    return new ImageData(out, w, h);
+  }
+
+  // === 结果渲染 + 命名 ===
+  function renderEnhanceResult() {
+    const r = enhanceState.result;
+    if (!r) return;
+    const img = enhanceState.img;
+
+    document.getElementById('enhanceOrigImg').src = img.src;
+    document.getElementById('enhanceResultImg').src = r.dataUrl;
+
+    const origSize = enhanceState.sourceBlob ? enhanceState.sourceBlob.size : 0;
+    document.getElementById('enhanceOrigSize').textContent =
+      `${img.width} × ${img.height} · ${fmtSize(origSize)}`;
+    document.getElementById('enhanceResultSize').textContent =
+      `${r.width} × ${r.height} · ${fmtSize(r.blob.size)}`;
+
+    // 结果信息
+    const changes = [];
+    if (enhanceState.scale > 1) changes.push(`${enhanceState.scale}× 放大`);
+    if (enhanceState.sharpen > 0) changes.push(['','轻','中','强'][enhanceState.sharpen] + '度锐化');
+    if (enhanceState.contrast > 0) changes.push(`+${enhanceState.contrast}% 对比`);
+    if (enhanceState.saturation > 0) changes.push(`+${enhanceState.saturation}% 饱和`);
+    const info = changes.length ? changes.join(' · ') : '无增强(原样输出)';
+    document.getElementById('enhanceResultInfo').innerHTML =
+      `处理方案:<strong>${info}</strong> · 输出 ${r.format.toUpperCase()}`;
+
+    document.getElementById('enhanceResultWrap').classList.add('show');
+    updateEnhanceNamePreview();
+  }
+
+  function fmtSize(bytes) {
+    if (!bytes) return '未知';
+    return bytes > 1024 * 1024
+      ? (bytes / 1024 / 1024).toFixed(1) + ' MB'
+      : (bytes / 1024).toFixed(0) + ' KB';
+  }
+
+  function updateEnhanceNamePreview() {
+    const input = document.getElementById('enhanceNamePrefix');
+    const preview = document.getElementById('enhanceNamePrefixPreview');
+    if (!input || !preview) return;
+    const prefix = (input.value || '').trim() || '高清图';
+    const now = new Date();
+    const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    const ext = enhanceState.quality ? 'png' : 'jpg';
+    const s = enhanceState.scale > 1 ? `_${enhanceState.scale}x` : '';
+    preview.innerHTML = `📁 <b>${prefix}${s}_${ts}.${ext}</b>`;
+  }
+  document.getElementById('enhanceNamePrefix').addEventListener('input', updateEnhanceNamePreview);
+  setTimeout(updateEnhanceNamePreview, 100);
+
+  // === 下载 ===
+  document.getElementById('enhanceDownloadBtn').addEventListener('click', () => {
+    if (!enhanceState.result) return;
+    const r = enhanceState.result;
+    try {
+      const prefix = (document.getElementById('enhanceNamePrefix').value || '').trim() || '高清图';
+      const now = new Date();
+      const ts = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+      const s = enhanceState.scale > 1 ? `_${enhanceState.scale}x` : '';
+      const filename = `${prefix}${s}_${ts}.${r.format}`;
+
+      const url = URL.createObjectURL(r.blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('已下载');
+    } catch (err) {
+      console.error(err);
+      showToast('下载失败: ' + err.message);
+    }
+  });
+
+  // === 继续处理下一张 ===
+  document.getElementById('enhanceContinueBtn').addEventListener('click', () => {
+    enhanceState.file = null;
+    enhanceState.img = null;
+    enhanceState.sourceBlob = null;
+    enhanceState.result = null;
+    document.getElementById('enhanceFileInput').value = '';
+    document.getElementById('enhancePreviewImg').src = '';
+    document.getElementById('enhancePreviewWrap').classList.remove('show');
+    document.getElementById('enhanceOptionsWrap').style.display = 'none';
+    document.getElementById('enhanceResultWrap').classList.remove('show');
+    document.getElementById('enhanceProgressWrap').classList.remove('show');
+    updateEnhanceProgress(0, '');
+    updateEnhanceProcessBtn();
+    document.getElementById('enhanceDropZone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showToast('已重置 · 参数已保留');
+  });
+
+  // === 从合成结果送来 ===
+  document.getElementById('mergeToEnhanceBtn').addEventListener('click', async () => {
+    if (!mergeState.result) return;
+    try {
+      const r = mergeState.result;
+      // 把合成结果伪装成一个 File 对象送进高清
+      const name = `合成图_${mergeState.images.length}张.${r.format}`;
+      const file = new File([r.blob], name, { type: r.blob.type });
+
+      // 切到高清 Tab
+      document.querySelector('.main-tab[data-mode="enhance"]').click();
+      await handleEnhanceFile(file);
+      showToast('已送入高清');
+      document.getElementById('enhanceDropZone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.error(err);
+      showToast('送入失败: ' + err.message);
+    }
+  });
+
+  // 初始化:应用默认 preset(photo)
+  setTimeout(() => {
+    applyPresetToUI(presetConfig.photo);
+    selectPresetBtn('photo');
+  }, 100);
+</script>
+</body>
+</html>
