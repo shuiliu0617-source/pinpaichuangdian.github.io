@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>手机存储能力测试</title>
+<style>
+body{font-family:system-ui,-apple-system,"PingFang SC",sans-serif;padding:24px 20px;font-size:17px;line-height:1.9;color:#222;max-width:560px;margin:0 auto}
+h1{font-size:20px}
+.ok{color:#0a8a4a;font-weight:700}
+.bad{color:#d03030;font-weight:700}
+code{background:#f2f2f2;padding:2px 6px;border-radius:6px;word-break:break-all;font-size:13px}
+hr{border:none;border-top:1px solid #ddd;margin:18px 0}
+p{margin:10px 0}
+</style>
+</head>
+<body>
+<h1>📱 手机存储能力测试</h1>
+<p>本页只有几十行代码，与积分系统无关。它逐项测试这台手机的浏览器能否保存数据：</p>
+<div id="r">测试中…</div>
+<script>
+'use strict';
+var out=[];
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function add(name,pass,msg){
+  out.push('<p>'+(pass?'<span class="ok">✅ '+name+'：可用</span>':'<span class="bad">❌ '+name+'：不可用</span>')
+    +(msg?'<br><code>'+msg+'</code>':'')+'</p>');
+}
+var tail='<hr><p>浏览器标识：<br><code>'+esc(navigator.userAgent)+'</code></p>'
+  +'<p><b>怎么看结果：</b>"存储A"和"存储B"只要有一个 ✅，积分系统就能正常保存；两个都 ❌，则是这台手机在系统层面禁止所有网页保存数据，与具体哪个网页无关。</p>';
+function render(){document.getElementById('r').innerHTML=out.join('')+tail}
+
+/* 1. localStorage（存储A） */
+try{
+  localStorage.setItem('__t','1');
+  var v=localStorage.getItem('__t');
+  localStorage.removeItem('__t');
+  add('localStorage（存储A）',v==='1',v==='1'?'':'写入了但读不回来');
+}catch(e){add('localStorage（存储A）',false,esc((e.name||'Error')+': '+(e.message||e)))}
+
+/* 2. sessionStorage */
+try{
+  sessionStorage.setItem('__t','1');sessionStorage.removeItem('__t');
+  add('sessionStorage',true);
+}catch(e){add('sessionStorage',false,esc((e.name||'Error')+': '+(e.message||e)))}
+
+/* 3. Cookie */
+try{
+  document.cookie='__t=1; path=/';
+  add('Cookie',document.cookie.indexOf('__t=1')>-1);
+}catch(e){add('Cookie',false,esc((e&&e.message)||String(e)))}
+
+/* 4. IndexedDB（存储B，异步） */
+(function(){
+  var done=false;
+  function fin(pass,msg){if(done)return;done=true;add('IndexedDB（存储B）',pass,msg||'');render()}
+  try{
+    if(!window.indexedDB){fin(false,'window.indexedDB 不存在');return}
+    var rq=indexedDB.open('__t_db',1);
+    rq.onupgradeneeded=function(){try{rq.result.createObjectStore('kv')}catch(e){}};
+    rq.onsuccess=function(){try{rq.result.close()}catch(e){};fin(true)};
+    rq.onerror=function(){fin(false,esc(rq.error?(rq.error.name+': '+rq.error.message):'打开失败'))};
+    setTimeout(function(){fin(false,'3 秒无响应（被挂起）')},3000);
+  }catch(e){fin(false,esc((e.name||'Error')+': '+(e.message||e)))}
+})();
+render();
+</script>
+</body>
+</html>
